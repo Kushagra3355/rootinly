@@ -1,13 +1,18 @@
-﻿# Rootinly AI - Crown View Hair Comparison Engine
+# Rootinly AI - Unified Scalp & Hair Analysis Platform
 
-A modular, production-ready Computer Vision and Machine Learning microservice that calculates exact follicular hair density and scalp visibility changes across clinical visits using Custom YOLOv8 Instance Segmentation.
+A modular, production-ready Computer Vision and Machine Learning platform that unifies two clinical scalp analysis engines into a single FastAPI service and web interface:
+
+1. **Crown View Hair Comparison**: Calculates exact follicular hair density and scalp visibility changes across clinical visits using Custom YOLOv8 Instance Segmentation and HSV colorimetry.
+2. **Hairfall Stage Determiner**: Classifies clinical hairfall progression stage (Level 1–5) and model confidence score from scalp photographs using Roboflow API integration.
+
+Both modules are served simultaneously from a single server entrypoint: `python main.py`.
 
 ---
 
 ## Architecture Overview
 
 ```
-rootinly_model/
+rootinly/
 ├── configs/                  # Centralized configuration & environment settings
 │   ├── __init__.py
 │   └── settings.py           # Typed settings dataclass with .env support
@@ -23,42 +28,48 @@ rootinly_model/
 ├── src/                      # Production source package
 │   └── rootinly/
 │       ├── __init__.py
-│       ├── config.py         # Config re-exporter
-│       ├── logger.py         # Structured logging & per-request ExecutionLogger
+│       ├── config.py         # Configuration re-exporter
+│       ├── logger.py         # Logging setup & request ExecutionLogger
 │       ├── schemas/          # Pydantic DTOs and API contract definitions
 │       │   ├── __init__.py
-│       │   ├── analysis.py   # Metrics, Deltas, Visualizations, LogEntry
-│       │   └── response.py   # ComparisonResponse, HealthResponse, ErrorResponse
-│       ├── core/             # AI & Computer Vision pipeline
+│       │   ├── analysis.py   # VisitMetrics, Deltas, Visualizations, LogEntry
+│       │   ├── response.py   # ComparisonResponse, HealthResponse, ErrorResponse
+│       │   └── stage.py      # StageResponse, StageLogsListResponse
+│       ├── core/             # AI & Computer Vision pipelines
 │       │   ├── __init__.py
-│       │   ├── preprocessor.py # Image decoding, alignment, Base64 conversion
-│       │   ├── segmentor.py  # YOLOv8 crown/hairline segmentation
-│       │   ├── analyzer.py   # HSV skin/scalp filtering, density & delta calculation
-│       │   └── pipeline.py   # End-to-end orchestration
+│       │   ├── preprocessor.py    # Image decoding, alignment, Base64 conversion
+│       │   ├── segmentor.py       # YOLOv8 crown/hairline segmentation
+│       │   ├── analyzer.py        # HSV scalp filtering & density calculation
+│       │   ├── pipeline.py        # Crown comparison orchestration
+│       │   └── stage_determiner.py# Roboflow stage inference service & logging
 │       └── api/              # FastAPI Application layer
 │           ├── __init__.py
-│           ├── app.py        # Application factory & lifespan management
-│           ├── dependencies.py # Singleton dependency injection
+│           ├── app.py        # Unified FastAPI factory & lifespan setup
+│           ├── dependencies.py # Singleton dependency providers
 │           └── routes/       # Modular API route controllers
 │               ├── __init__.py
-│               ├── health.py # /api/v1/health & system status
-│               └── comparison.py # /compare-crowns & frontend serving
+│               ├── health.py # /api/v1/health & system readiness
+│               ├── comparison.py # /compare-crowns & frontend delivery
+│               └── stage.py  # /predict-stage & /api/v1/stage/logs
+│
+├── stage_determiner/         # Stage determiner storage
+│   └── logs/                 # Dedicated stage prediction execution logs
 │
 ├── static/                   # Web frontend assets
-│   └── index.html            # Single-Page clinical dashboard UI
+│   └── index.html            # Unified single-page clinical dashboard
 │
 ├── scripts/                  # Command-line utilities
-│   ├── run_server.py         # CLI server launcher
+│   ├── run_server.py         # CLI launcher proxy
 │   └── train.py              # YOLOv8 training / fine-tuning script
 │
 ├── tests/                    # Comprehensive unit & integration tests
 │   ├── __init__.py
 │   ├── test_preprocessor.py  # Image processing unit tests
 │   ├── test_analyzer.py      # Density calculation unit tests
-│   └── test_api.py           # FastAPI integration tests
+│   ├── test_stage_determiner.py # Stage classification tests
+│   └── test_api.py           # Unified FastAPI integration tests
 │
-├── main.py                   # Production root entrypoint
-├── new.py                    # Backward compatibility proxy
+├── main.py                   # Single production server entrypoint
 ├── Dockerfile                # Multi-stage production container
 ├── docker-compose.yml        # Container orchestration
 ├── requirements.txt          # Production dependencies
@@ -71,13 +82,15 @@ rootinly_model/
 
 ## Features
 
+- **Dual-Module Unified Service**: Both Crown Comparison and Stage Determination run from a single FastAPI server via `python main.py`.
 - **Custom YOLOv8 Segmentation**: Organic hairline and crown ROI extraction eliminating background noise.
-- **Follicular Density Analysis**: Precise pixel-level ratio calculations between hair follicles and scalp exposure.
-- **Clinical Delta Calculations**: Automatic positive/negative delta tracking across visits.
-- **Visual Overlays & Contours**: Color-coded segmentation heatmaps (Green for hair, Orange for exposed scalp, Cyan for head contour).
-- **FastAPI Async Engine**: High-throughput REST API with automatic Swagger UI (`/docs`).
-- **Clean Architecture & Separation of Concerns**: Decoupled domain models, core CV logic, schemas, and API routers.
-- **Docker Ready**: Production containerization with health checks.
+- **Follicular Density Analysis**: Precise pixel-level ratio calculations between hair follicles and exposed scalp.
+- **Clinical Delta Tracking**: Automatic percentage change calculation across patient visits.
+- **Follicular Visual Overlays**: High-resolution segmentation heatmaps (Green for hair, Orange for exposed scalp, Cyan for head contour).
+- **Hairfall Stage Classification**: Scalp image evaluation delivering exact stage level and classification confidence percentage.
+- **Clean Single-Page Frontend**: Modern, responsive dark-theme interface with zero external dependencies and seamless tab switching.
+- **Dedicated Request Logging**: Timestamped diagnostic logs maintained for both Crown Comparison (`logs/`) and Stage Determiner (`stage_determiner/logs/`).
+- **Production-Ready**: High-throughput async endpoints, comprehensive test suite, Docker containerization, and automated Swagger UI (`/docs`).
 
 ---
 
@@ -87,9 +100,9 @@ rootinly_model/
 
 ```bash
 # Clone repository and navigate to folder
-cd rootinly_model
+cd rootinly
 
-# Create and activate virtual environment (optional)
+# Create and activate virtual environment
 python -m venv venv
 # On Windows:
 .\venv\Scripts\activate
@@ -102,13 +115,13 @@ pip install -r requirements.txt
 
 ### 2. Running the Server
 
-Run the production entrypoint:
+Run the unified server entrypoint:
 
 ```bash
 python main.py
 ```
 
-Or with custom parameters:
+Optional CLI parameters:
 
 ```bash
 python main.py --host 0.0.0.0 --port 5000 --reload --no-browser
@@ -126,22 +139,24 @@ FastAPI provides automated interactive API documentation:
 
 ### Key Endpoints
 
-#### 1. System Health Check
+#### 1. Unified System Health Check
 `GET /api/v1/health`
 
 **Response:**
 ```json
 {
   "status": "healthy",
-  "app_name": "Crown View Hair Comparison API",
+  "app_name": "Rootinly AI - Hair & Scalp Analysis Platform",
   "version": "2.0.0",
   "model_loaded": true,
   "model_path": "models/best.pt",
-  "timestamp": "2026-08-22T15:17:30.123456"
+  "roboflow_configured": true,
+  "active_modules": ["crown_comparison", "stage_determiner"],
+  "timestamp": "2026-08-26T19:46:55.123456"
 }
 ```
 
-#### 2. Crown Comparison
+#### 2. Module 1: Crown Hair Comparison
 `POST /compare-crowns`
 
 - **Content-Type**: `multipart/form-data`
@@ -156,8 +171,8 @@ FastAPI provides automated interactive API documentation:
   "pipeline": "yolov8_segmentation",
   "response_time_ms": 142.5,
   "response_time_formatted": "142.5 ms",
-  "log_file": "logs/2026-08-22_15-17-30.log",
-  "timestamp": "2026-08-22T15:17:30.123456",
+  "log_file": "logs/2026-08-26_19-46-55.log",
+  "timestamp": "2026-08-26T19:46:55.123456",
   "previous_visit": {
     "hair_density_percent": 68.45,
     "scalp_visibility_percent": 31.55,
@@ -183,6 +198,37 @@ FastAPI provides automated interactive API documentation:
   "logs": [ ... ]
 }
 ```
+
+#### 3. Module 2: Hairfall Stage Determiner
+`POST /predict-stage`
+
+- **Content-Type**: `multipart/form-data`
+- **Parameters**:
+  - `file` (file): Scalp photograph for classification
+
+**Response Structure:**
+```json
+{
+  "status": "success",
+  "stage": "Level 2",
+  "confidence": 94.2,
+  "duration_ms": 138.4,
+  "duration_formatted": "138.4 ms",
+  "log_file": "stage_determiner/logs/stage_predict_2026-08-26_19-46-55.log",
+  "logs": [ ... ]
+}
+```
+
+#### 4. Stage Logs & Health
+- `GET /api/v1/stage/logs`: List available stage prediction log files.
+- `GET /api/v1/stage/health`: Inspect Roboflow classifier service status and log directory path.
+
+---
+
+## Logging Architecture
+
+- **Crown Comparison Logs**: Written to [`logs/`](logs/) (e.g., `logs/2026-08-26_19-46-55.log`).
+- **Stage Determiner Logs**: Written to [`stage_determiner/logs/`](stage_determiner/logs/) (e.g., `stage_determiner/logs/stage_predict_2026-08-26_19-46-55.log`).
 
 ---
 
