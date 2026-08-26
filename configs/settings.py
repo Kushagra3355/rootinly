@@ -2,16 +2,19 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 @dataclass
 class Settings:
-    """Production configuration settings for Rootinly AI service."""
+    """Production configuration settings for Rootinly AI unified service."""
     # Application Metadata
-    APP_NAME: str = "Crown View Hair Comparison API"
+    APP_NAME: str = "Rootinly AI - Hair & Scalp Analysis Platform"
     APP_VERSION: str = "2.0.0"
-    APP_DESCRIPTION: str = "Calculates exact hair density using Custom YOLOv8 Instance Segmentation."
+    APP_DESCRIPTION: str = "Unified platform for Crown View Hair Growth Comparison and Hairfall Stage Classification."
     DEBUG: bool = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
     # Server Settings
@@ -31,6 +34,9 @@ class Settings:
     LOGS_DIR: Path = field(
         default_factory=lambda: Path(os.getenv("LOGS_DIR", str(BASE_DIR / "logs")))
     )
+    STAGE_LOGS_DIR: Path = field(
+        default_factory=lambda: Path(os.getenv("STAGE_LOGS_DIR", str(BASE_DIR / "stage_determiner" / "logs")))
+    )
 
     # CORS
     CORS_ORIGINS: List[str] = field(
@@ -39,6 +45,12 @@ class Settings:
 
     # YOLO Segmentation Parameters
     YOLO_CONFIDENCE: float = float(os.getenv("YOLO_CONFIDENCE", "0.5"))
+
+    # Roboflow Stage Classification Parameters
+    ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "05j2AaNi6KvZ8ieRDR6e")
+    ROBOFLOW_MODEL_ID: str = os.getenv("ROBOFLOW_MODEL_ID", "hyehye2/1")
+    ROBOFLOW_API_URL: str = os.getenv("ROBOFLOW_API_URL", "https://detect.roboflow.com")
+    ROBOFLOW_TIMEOUT_SECONDS: float = float(os.getenv("ROBOFLOW_TIMEOUT_SECONDS", "15.0"))
 
     # HSV Scalp/Skin Detection Thresholds
     LOWER_SKIN_HSV: Tuple[int, int, int] = (0, 10, 60)
@@ -60,3 +72,4 @@ class Settings:
         return self.STATIC_DIR / "index.html"
 
 settings = Settings()
+

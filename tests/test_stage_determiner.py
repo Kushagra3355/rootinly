@@ -6,13 +6,15 @@ import cv2
 import numpy as np
 from fastapi.testclient import TestClient
 
-from stage_determiner.app import app
-from stage_determiner.logger import (
-    LOGS_DIR,
-    APP_LOG_FILE,
+from src.rootinly.api.app import app
+from src.rootinly.config import settings
+from src.rootinly.core.stage_determiner import (
     StageExecutionLogger,
-    setup_stage_determiner_logging,
+    StageDeterminerService,
 )
+
+LOGS_DIR = settings.STAGE_LOGS_DIR
+
 
 
 class TestHairfallStageDeterminer(unittest.TestCase):
@@ -39,13 +41,14 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertNotIn("logsWrapper", response.text)
 
     def test_health_check(self):
-        """Test GET /api/v1/health returns healthy status and logs directory path."""
-        response = self.client.get("/api/v1/health")
+        """Test GET /api/v1/stage/health returns healthy status and logs directory path."""
+        response = self.client.get("/api/v1/stage/health")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("status"), "healthy")
         self.assertIn("logs_directory", data)
         self.assertTrue(data["logs_directory"].endswith(str(Path("stage_determiner/logs"))))
+
 
     def test_list_logs_endpoint(self):
         """Test GET /api/v1/logs lists logs inside stage_determiner/logs."""
@@ -66,7 +69,7 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], "Uploaded file is empty.")
 
-    @patch("stage_determiner.app.requests.post")
+    @patch("src.rootinly.core.stage_determiner.requests.post")
     def test_predict_stage_endpoint_success(self, mock_post):
         """Test POST /predict-stage returns stage, confidence, and records logs in background."""
         mock_response = MagicMock()
@@ -111,7 +114,7 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertIn("Hairfall Stage Determination Log", content)
         self.assertIn("Stage='Stage 2'", content)
 
-    @patch("stage_determiner.app.requests.post")
+    @patch("src.rootinly.core.stage_determiner.requests.post")
     def test_predict_stage_endpoint_roboflow_error(self, mock_post):
         """Test POST /predict-stage handles Roboflow API errors with logging."""
         mock_response = MagicMock()
