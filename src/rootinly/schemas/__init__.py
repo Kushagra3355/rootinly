@@ -1,4 +1,4 @@
-﻿"""Schemas package for Rootinly API models and DTOs."""
+"""Schemas package for Rootinly API models and DTOs."""
 from src.rootinly.schemas.analysis import (
     VisitMetrics,
     PercentageChange,
@@ -10,6 +10,11 @@ from src.rootinly.schemas.response import (
     HealthResponse,
     ErrorResponse,
 )
+from src.rootinly.schemas.stage import (
+    StageResponse,
+    StageLogEntry,
+    StageLogsListResponse,
+)
 
 __all__ = [
     "VisitMetrics",
@@ -19,4 +24,8 @@ __all__ = [
     "ComparisonResponse",
     "HealthResponse",
     "ErrorResponse",
+    "StageResponse",
+    "StageLogEntry",
+    "StageLogsListResponse",
 ]
+

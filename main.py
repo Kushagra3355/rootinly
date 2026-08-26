@@ -1,9 +1,9 @@
 """
-Rootinly AI Crown Comparison Server Entrypoint.
+Rootinly AI Unified Server Entrypoint (Dual-Module: Crown Comparison & Stage Determiner).
 
 Usage:
     python main.py
-    python main.py --port 8000 --host 0.0.0.0 --reload --no-browser
+    python main.py --port 5000 --host 0.0.0.0 --reload --no-browser
 """
 import argparse
 import sys
@@ -24,18 +24,21 @@ __all__ = ["app", "main"]
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Rootinly AI - Crown View Hair Comparison API Server"
+        description="Rootinly AI - Unified Hair & Scalp Analysis Server (Crown Comparison + Stage Determiner)"
     )
     parser.add_argument("--host", type=str, default=settings.HOST, help="Bind host (default: 0.0.0.0)")
     parser.add_argument("--port", type=int, default=settings.PORT, help="Bind port (default: 5000)")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
     parser.add_argument("--no-browser", action="store_true", help="Do not automatically open the browser")
     parser.add_argument("--model-path", type=str, default=None, help="Custom YOLO model weights path")
+    parser.add_argument("--roboflow-key", type=str, default=None, help="Custom Roboflow API key")
 
     args = parser.parse_args()
 
     if args.model_path:
         settings.MODEL_PATH = Path(args.model_path)
+    if args.roboflow_key:
+        settings.ROBOFLOW_API_KEY = args.roboflow_key
 
     server_url = f"http://localhost:{args.port}"
 
@@ -45,10 +48,14 @@ def main():
         threading.Timer(1.5, open_browser).start()
 
     print(f"\n=======================================================")
-    print(f"  Rootinly AI - Crown View Hair Comparison API")
-    print(f"  Server URL:     {server_url}")
+    print(f"  {settings.APP_NAME}")
+    print(f"  Version:        {settings.APP_VERSION}")
+    print(f"  Web Interface:  {server_url}")
     print(f"  API Docs:       {server_url}/docs")
     print(f"  Health Check:   {server_url}/api/v1/health")
+    print(f"  Active Modules:")
+    print(f"    1. Crown Hair Comparison:       POST /compare-crowns")
+    print(f"    2. Hairfall Stage Determiner:   POST /predict-stage")
     print(f"=======================================================\n")
 
     uvicorn.run(
@@ -60,3 +67,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

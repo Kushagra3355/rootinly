@@ -1,4 +1,4 @@
-﻿"""API response schemas."""
+"""API response schemas."""
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from src.rootinly.schemas.analysis import (
@@ -27,7 +27,13 @@ class HealthResponse(BaseModel):
     version: str = Field(..., description="Application version")
     model_loaded: bool = Field(..., description="Indicates if YOLO model is loaded into memory")
     model_path: str = Field(..., description="Path to active model weights file")
+    roboflow_configured: bool = Field(True, description="Indicates if Roboflow stage classification is configured")
+    active_modules: List[str] = Field(
+        default_factory=lambda: ["crown_comparison", "stage_determiner"],
+        description="List of active API modules served",
+    )
     timestamp: str = Field(..., description="Current ISO 8601 timestamp")
+
 
 class ErrorResponse(BaseModel):
     status: str = Field("error", description="Error status indicator")

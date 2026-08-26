@@ -1,23 +1,31 @@
-﻿"""Health check and system inspection routes."""
+"""Health check and system inspection routes."""
 from datetime import datetime
 from fastapi import APIRouter, Depends
-from src.rootinly.api.dependencies import get_segmentor
+from src.rootinly.api.dependencies import get_segmentor, get_stage_determiner
 from src.rootinly.config import settings
 from src.rootinly.core.segmentor import CrownSegmentor
+from src.rootinly.core.stage_determiner import StageDeterminerService
 from src.rootinly.schemas.response import HealthResponse
 
 router = APIRouter(tags=["Health & System"])
 
 @router.get("/health", response_model=HealthResponse, summary="System Health Check")
-async def health_check(segmentor: CrownSegmentor = Depends(get_segmentor)):
+async def health_check(
+    segmentor: CrownSegmentor = Depends(get_segmentor),
+    stage_service: StageDeterminerService = Depends(get_stage_determiner),
+):
     """
-    Returns service health status, version, and model readiness.
+    Returns unified service health status, version, active modules, and AI readiness.
     """
+    is_healthy = segmentor.is_loaded
     return HealthResponse(
-        status="healthy" if segmentor.is_loaded else "degraded",
+        status="healthy" if is_healthy else "degraded",
         app_name=settings.APP_NAME,
         version=settings.APP_VERSION,
         model_loaded=segmentor.is_loaded,
         model_path=str(segmentor.model_path),
+        roboflow_configured=stage_service.is_configured,
+        active_modules=["crown_comparison", "stage_determiner"],
         timestamp=datetime.now().isoformat(),
     )
+
