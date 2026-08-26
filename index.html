@@ -1,0 +1,750 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Scalp Capture</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;-webkit-user-select:none;user-select:none}
+.app{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+.cam-box{flex:1;position:relative;overflow:hidden;background:#000;min-height:0}
+#cam{display:block;width:100%;height:100%;object-fit:cover}
+#ov{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+#anal{display:none}
+.fl{position:absolute;inset:0;background:#fff;opacity:0;z-index:20;pointer-events:none}
+
+.hud{position:absolute;top:0;left:0;right:0;z-index:10;padding:12px 16px;background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 100%);display:flex;justify-content:space-between;align-items:center}
+.step-badge{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.zone-name{font-size:13px;font-weight:700}
+.info-btn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* Distance display */
+.dist-hud{
+  position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:11;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 18px;border-radius:22px;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1.5px solid rgba(255,255,255,.1);
+  transition:border-color .3s;
+}
+.dist-hud.ok{border-color:rgba(0,230,138,.5)}
+.dist-hud.close{border-color:rgba(255,107,107,.5)}
+.dist-hud.far{border-color:rgba(255,167,38,.5)}
+.dist-hud.none{border-color:rgba(255,255,255,.15)}
+.d-val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;min-width:40px;text-align:right;transition:color .15s}
+.d-val.ok{color:#00e68a}.d-val.close{color:#ff6b6b}.d-val.far{color:#ffa726}.d-val.none{color:#555}
+.d-cm{font-size:13px;color:#888;font-weight:600;margin-right:6px}
+.d-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px}
+.d-tag.ok{background:rgba(0,230,138,.15);color:#00e68a}
+.d-tag.close{background:rgba(255,107,107,.15);color:#ff6b6b}
+.d-tag.far{background:rgba(255,167,38,.15);color:#ffa726}
+.d-tag.none{background:rgba(255,255,255,.08);color:#666}
+
+/* Range bar (horizontal, under distance) */
+.range-bar{
+  position:absolute;top:100px;left:20px;right:20px;z-index:11;
+  height:18px;display:flex;align-items:center;
+}
+.range-track{
+  flex:1;height:4px;border-radius:2px;position:relative;
+  background:linear-gradient(90deg,
+    #ff6b6b 0%, #ff6b6b 22%,
+    #00e68a 28%, #00e68a 58%,
+    #ffa726 64%, #ffa726 100%
+  );
+  opacity:.6;
+}
+.range-ptr{
+  position:absolute;top:-5px;width:14px;height:14px;
+  border-radius:50%;background:#fff;
+  box-shadow:0 0 8px rgba(255,255,255,.5);
+  transition:left .1s ease-out;
+  transform:translateX(-50%);
+}
+.range-labels{
+  position:absolute;top:12px;left:0;right:0;
+  display:flex;justify-content:space-between;
+  font-size:8px;color:#555;font-weight:700;
+}
+
+.guide-bar{position:absolute;bottom:0;left:0;right:0;z-index:10;background:linear-gradient(0deg,rgba(0,0,0,.88) 70%,transparent 100%);padding:28px 20px 14px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.prog-row{width:100%;display:flex;gap:4px;margin-bottom:2px}
+.prog-seg{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.12);transition:background .3s}
+.prog-seg.done{background:#00e68a}.prog-seg.cur{background:rgba(255,255,255,.4)}
+
+.indicators{display:flex;gap:12px;margin-bottom:2px}
+.ind{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+.dot-i{width:8px;height:8px;border-radius:50%}
+.dot-i.ok{background:#00e68a;box-shadow:0 0 6px rgba(0,230,138,.5)}
+.dot-i.bad{background:#ff6b6b;box-shadow:0 0 6px rgba(255,107,107,.5)}
+.dot-i.warn{background:#ffa726;box-shadow:0 0 6px rgba(255,167,38,.5)}
+
+.guide-msg{font-size:16px;font-weight:700;text-align:center;min-height:22px}
+.guide-msg.ok{color:#00e68a}.guide-msg.bad{color:#ff6b6b}.guide-msg.warn{color:#ffa726}
+.guide-sub{font-size:12px;color:rgba(255,255,255,.4);text-align:center;min-height:16px}
+
+.shutter-row{display:flex;align-items:center;justify-content:center;padding-bottom:env(safe-area-inset-bottom,4px)}
+.shutter{width:68px;height:68px;border-radius:50%;border:4px solid rgba(255,255,255,.3);background:none;position:relative;cursor:pointer}
+.shutter::after{content:'';position:absolute;inset:5px;border-radius:50%;background:rgba(255,255,255,.75);transition:transform .12s}
+.shutter:active::after{transform:scale(.82)}
+.shutter.go{border-color:#00e68a;animation:rng 1.6s ease infinite;-webkit-animation:rng 1.6s ease infinite}
+.shutter.go::after{background:#00e68a}
+.shutter:disabled{opacity:.2;cursor:default;animation:none;-webkit-animation:none}
+.shutter:disabled:active::after{transform:none}
+@keyframes rng{0%{box-shadow:0 0 0 0 rgba(0,230,138,.4)}70%{box-shadow:0 0 0 16px rgba(0,230,138,0)}100%{box-shadow:0 0 0 0 rgba(0,230,138,0)}}
+
+/* Overlays */
+.welcome{position:absolute;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;transition:opacity .4s}
+.welcome.out{opacity:0;pointer-events:none}
+.w-icon{font-size:52px;margin-bottom:14px}
+.welcome h1{font-size:24px;font-weight:800;margin-bottom:6px}
+.welcome .sub{font-size:14px;color:#888;max-width:300px;line-height:1.5;margin-bottom:24px}
+.sp{width:100%;max-width:320px;margin-bottom:24px}
+.sp-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1a1a1a;text-align:left}
+.sp-num{width:28px;height:28px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#666;flex-shrink:0}
+.sp-txt{font-size:13px;color:#999}.sp-txt b{color:#ddd;font-weight:600}
+.w-btn{padding:16px 56px;border:none;border-radius:50px;background:#fff;color:#000;font-size:16px;font-weight:700;cursor:pointer}
+.w-btn:active{opacity:.85}
+.w-note{font-size:11px;color:#555;margin-top:14px;max-width:280px;line-height:1.4}
+.w-err{font-size:12px;color:#ff6b6b;margin-top:10px;display:none;max-width:300px}
+
+.instr{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.93);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:fadeUp .3s ease}
+.instr.show{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.instr-step{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:4px}
+.instr-title{font-size:22px;font-weight:800;margin-bottom:14px}
+.angle-diag{width:180px;height:180px;margin-bottom:16px}
+.angle-diag svg{width:100%;height:100%}
+.instr-list{text-align:left;max-width:300px;margin-bottom:20px}
+.il{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:14px;color:#bbb;line-height:1.4}
+.il .ico{flex-shrink:0;width:24px;height:24px;border-radius:6px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:13px}
+.instr-go{padding:14px 44px;border:none;border-radius:50px;background:#fff;color:#000;font-size:15px;font-weight:700;cursor:pointer}
+
+.review{position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.94);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px}
+.review.show{display:flex}
+.review img{max-width:90%;max-height:48vh;border-radius:14px;border:2px solid #1a1a1a}
+.rv-lbl{font-size:14px;font-weight:700;color:#888}
+.rv-btns{display:flex;gap:12px;margin-top:4px}
+.rv-btns button{padding:14px 32px;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-re{background:#1a1a1a;color:#fff}.btn-dl{background:#4fc3f7;color:#000}.btn-ok{background:#00e68a;color:#000}
+
+.done-s{position:absolute;inset:0;z-index:80;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+.done-s.show{display:flex}
+.done-s .chk{width:64px;height:64px;border-radius:50%;background:#00e68a;color:#000;font-size:30px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.done-s h2{font-size:22px;font-weight:800;margin-bottom:6px}
+.done-s p{font-size:14px;color:#777;margin-bottom:18px;max-width:280px;line-height:1.5}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.th-w{display:flex;flex-direction:column;align-items:center}
+.thumbs img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:2px solid #1a1a1a}
+.th-l{font-size:9px;color:#666;margin-top:2px}
+
+.dbg{background:#0a0a0a;padding:6px 10px;font-family:Menlo,'Courier New',monospace;font-size:9px;color:#555;line-height:1.55;border-top:1px solid #151515;max-height:80px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.dbg .v{color:#4fc3f7}.dbg .g{color:#00e68a}.dbg .r{color:#ff6b6b}.dbg .y{color:#ffa726}.dbg b{color:#777}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="welcome" id="welcome">
+    <div class="w-icon">📷</div>
+    <h1>Scalp Analysis Capture</h1>
+    <div class="sub">Hand the phone to someone. They'll be guided through 5 scalp angles.</div>
+    <div class="sp">
+      <div class="sp-item"><div class="sp-num">1</div><div class="sp-txt"><b>Front hairline</b></div></div>
+      <div class="sp-item"><div class="sp-num">2</div><div class="sp-txt"><b>Crown / top</b></div></div>
+      <div class="sp-item"><div class="sp-num">3</div><div class="sp-txt"><b>Left temple</b></div></div>
+      <div class="sp-item"><div class="sp-num">4</div><div class="sp-txt"><b>Right temple</b></div></div>
+      <div class="sp-item"><div class="sp-num">5</div><div class="sp-txt"><b>Back / nape</b></div></div>
+    </div>
+    <button class="w-btn" id="startBtn">Begin Capture</button>
+    <div class="w-note">Requires camera &amp; motion sensors · HTTPS</div>
+    <div class="w-err" id="wErr"></div>
+  </div>
+
+  <div class="instr" id="instrOv">
+    <div class="instr-step" id="instrStep"></div>
+    <div class="instr-title" id="instrTitle"></div>
+    <div class="angle-diag" id="angleDiag"></div>
+    <div class="instr-list" id="instrList"></div>
+    <button class="instr-go" onclick="dismissInstr()">I'm Ready</button>
+  </div>
+
+  <div class="cam-box">
+    <video id="cam" autoplay playsinline muted webkit-playsinline></video>
+    <canvas id="ov"></canvas>
+    <canvas id="anal"></canvas>
+    <div class="fl" id="fl"></div>
+
+    <div class="hud">
+      <div class="step-badge" id="stepBadge">Step 1 / 5</div>
+      <div class="zone-name" id="zoneName">Front</div>
+      <button class="info-btn" onclick="showInstr()">?</button>
+    </div>
+
+    <div class="dist-hud none" id="distHud">
+      <div><span class="d-val none" id="dVal">—</span><span class="d-cm">cm</span></div>
+      <div class="d-tag none" id="dTag">waiting</div>
+    </div>
+
+    <div class="range-bar">
+      <div class="range-track">
+        <div class="range-ptr" id="rangePtr" style="left:50%"></div>
+      </div>
+      <div class="range-labels"><span>10</span><span>20</span><span>30</span><span>40</span><span>50+</span></div>
+    </div>
+
+    <div class="guide-bar">
+      <div class="prog-row" id="progRow"></div>
+      <div class="indicators">
+        <div class="ind"><div class="dot-i bad" id="dAngle"></div><span id="lAngle">Angle</span></div>
+        <div class="ind"><div class="dot-i bad" id="dDist"></div><span id="lDist">Distance</span></div>
+      </div>
+      <div class="guide-msg bad" id="gMsg">Initializing…</div>
+      <div class="guide-sub" id="gSub"></div>
+      <div class="shutter-row">
+        <button class="shutter" id="shutter" disabled onclick="capture()"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="review" id="revOv">
+    <img id="revImg" src="" alt="">
+    <div class="rv-lbl" id="revLbl"></div>
+    <div class="rv-btns">
+      <button class="btn-re" onclick="retake()">Retake</button>
+      <button class="btn-dl" onclick="dlCurrent()">⬇ Download</button>
+      <button class="btn-ok" onclick="accept()">Next →</button>
+    </div>
+  </div>
+
+  <div class="done-s" id="doneS">
+    <div class="chk">✓</div><h2>Capture Complete</h2>
+    <p>All 5 scalp angles captured. Tap any thumbnail to save individually.</p>
+    <div class="thumbs" id="thumbs"></div>
+    <button class="w-btn" onclick="dlAll()">⬇ Download All to Phone</button>
+    <div style="font-size:11px;color:#555;margin-top:10px">On iPhone: tap Download → choose "Save Image"</div>
+  </div>
+
+  <div class="dbg" id="dbg">—</div>
+</div>
+
+<script>
+/*
+  ═══════════════════════════════════════════════════════════════
+  DISTANCE DETECTION — Scene Complexity Analysis
+  ═══════════════════════════════════════════════════════════════
+
+  Problem: pixel-level "content width" detection doesn't work because
+  it can't tell a head at 25cm from furniture at 1m.
+
+  Solution: When camera is CLOSE to a surface (scalp, skin, any object):
+    → The oval region is filled with ONE surface
+    → Colors are uniform / slowly varying
+    → Few distinct color groups
+    → Scene complexity is LOW
+
+  When camera is FAR from objects (room, multiple objects):
+    → The oval has MANY different surfaces
+    → Colors are diverse (wall, furniture, floor, shadows)
+    → Many distinct color groups
+    → Scene complexity is HIGH
+
+  We quantize colors in the oval into buckets, count how many buckets
+  have significant pixel counts. The dominant bucket's coverage %
+  directly maps to proximity:
+    90%+ coverage = very close (<15cm)
+    70-90%        = ideal range (15-30cm)
+    50-70%        = borderline (30-45cm)
+    <50%          = far / room scene (45cm+)
+
+  This is fundamentally different from edge detection or content-width.
+  It measures "am I looking at ONE thing or MANY things."
+  ═══════════════════════════════════════════════════════════════
+*/
+
+var ZONES=[
+  {id:'front',label:'Front Hairline',beta:45,gamma:0,dPos:'front',
+    ins:[{i:'📐',t:'Hold at <b>45°</b> tilted down'},{i:'📏',t:'Keep <b>20–30 cm</b> from scalp'},{i:'🧑',t:'Patient: head slightly back'},{i:'💡',t:'Even lighting'}]},
+  {id:'top',label:'Crown / Top',beta:80,gamma:0,dPos:'top',
+    ins:[{i:'📐',t:'Hold phone <b>nearly flat</b>'},{i:'📏',t:'<b>20–30 cm</b> above head'},{i:'🧑',t:'Patient: tilt head forward'},{i:'💡',t:'Avoid your shadow'}]},
+  {id:'left',label:'Left Temple',beta:55,gamma:-25,dPos:'left',
+    ins:[{i:'📐',t:'Angle phone <b>left</b> ~55°'},{i:'📏',t:'<b>20–30 cm</b> from temple'},{i:'🧑',t:'Patient: turn head right'},{i:'💡',t:'Ear to mid-scalp'}]},
+  {id:'right',label:'Right Temple',beta:55,gamma:25,dPos:'right',
+    ins:[{i:'📐',t:'Angle phone <b>right</b> ~55°'},{i:'📏',t:'<b>20–30 cm</b> from temple'},{i:'🧑',t:'Patient: turn head left'},{i:'💡',t:'Mirror left side'}]},
+  {id:'back',label:'Back of Head',beta:60,gamma:0,dPos:'back',
+    ins:[{i:'📐',t:'Hold at <b>60°</b> tilted down'},{i:'📏',t:'<b>20–30 cm</b> from nape'},{i:'🧑',t:'Patient: chin to chest'},{i:'💡',t:'Crown to nape'}]}
+];
+
+var cur=0,caps={},rdy=false,holdT=0,HOLD=600,sOK=false;
+var S={alpha:0,beta:0,gamma:0};
+
+/* Analysis results — updated every frame */
+var D={
+  dist:0,           /* estimated cm */
+  distSmooth:0,     /* smoothed cm */
+  dominance:0,      /* % of oval in dominant color group */
+  numGroups:0,      /* number of significant color groups */
+  complexity:0,     /* scene complexity score 0-100 */
+  detected:false,   /* is a close-up surface detected? */
+  state:'none'      /* 'too_close'|'good'|'too_far'|'none' */
+};
+
+var IDEAL_MIN=18, IDEAL_MAX=32;
+var AW=80, AH=60; /* small canvas for speed — runs every frame */
+
+var cam=document.getElementById('cam');
+var cv=document.getElementById('ov');
+var c=cv.getContext('2d');
+var analC=document.getElementById('anal');
+var ac=analC.getContext('2d',{willReadFrequently:true});
+
+var progRow=document.getElementById('progRow');
+for(var i=0;i<ZONES.length;i++){var s=document.createElement('div');s.className='prog-seg'+(i===0?' cur':'');progRow.appendChild(s);}
+
+function makeDiag(pos,angle){
+  var svg='<svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">';
+  svg+='<ellipse cx="90" cy="135" rx="30" ry="18" fill="none" stroke="#333" stroke-width="1.5"/>';
+  svg+='<line x1="82" y1="118" x2="82" y2="128" stroke="#333" stroke-width="1.5"/><line x1="98" y1="118" x2="98" y2="128" stroke="#333" stroke-width="1.5"/>';
+  svg+='<circle cx="90" cy="110" r="22" fill="#1a1a1a" stroke="#555" stroke-width="1.5"/>';
+  var hl={front:'M75 100 Q90 83 105 100',top:'M80 102 A10 10 0 1 1 100 102 A10 10 0 1 1 80 102',left:'M68 102 Q63 110 68 118',right:'M112 102 Q117 110 112 118',back:'M78 115 Q90 130 102 115'};
+  svg+='<path d="'+hl[pos]+'" fill="none" stroke="#00e68a" stroke-width="2.5" opacity=".7"/>';
+  var pp={front:{x:90,y:45,r:45},top:{x:90,y:35,r:80},left:{x:35,y:60,r:35},right:{x:145,y:60,r:-35},back:{x:90,y:45,r:60}};var p=pp[pos];
+  svg+='<g transform="translate('+p.x+','+p.y+') rotate('+p.r+')"><rect x="-12" y="-18" width="24" height="36" rx="4" fill="#333" stroke="#666" stroke-width="1"/><circle cx="0" cy="-10" r="3" fill="none" stroke="#888" stroke-width="1"/></g>';
+  svg+='<text x="'+((p.x+90)/2)+'" y="'+((p.y+110)/2-2)+'" font-size="9" fill="#4fc3f7" text-anchor="middle" font-weight="600">20-30cm</text>';
+  svg+='</svg>';
+  return svg;
+}
+
+/* ═══ Start ═══ */
+document.getElementById('startBtn').addEventListener('click',function(){
+  var err=document.getElementById('wErr');err.style.display='none';
+  var sp=[];
+  if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function')
+    sp.push(DeviceMotionEvent.requestPermission().catch(function(){return'denied';}));
+  else sp.push(Promise.resolve('granted'));
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function')
+    sp.push(DeviceOrientationEvent.requestPermission().catch(function(){return'denied';}));
+  else sp.push(Promise.resolve('granted'));
+  Promise.all(sp).then(function(){
+    window.addEventListener('deviceorientation',function(e){sOK=true;S.alpha=(e.alpha!=null)?e.alpha:0;S.beta=(e.beta!=null)?e.beta:0;S.gamma=(e.gamma!=null)?e.gamma:0;},false);
+    return navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}},audio:false})
+      .catch(function(){return navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});})
+      .catch(function(){return navigator.mediaDevices.getUserMedia({video:true,audio:false});});
+  }).then(function(stream){
+    cam.srcObject=stream;cam.setAttribute('autoplay','');cam.setAttribute('playsinline','');cam.setAttribute('muted','');
+    return cam.play();
+  }).then(function(){
+    document.getElementById('welcome').classList.add('out');
+    setTimeout(function(){document.getElementById('welcome').style.display='none';},400);
+    setZone(0);showInstr();requestAnimationFrame(loop);
+  }).catch(function(e){err.textContent='Error: '+(e.message||e);err.style.display='block';});
+},false);
+
+if(!('ontouchstart' in window)&&!navigator.maxTouchPoints){
+  window.addEventListener('mousemove',function(e){sOK=true;S.beta=(e.clientY/window.innerHeight)*90;S.gamma=(e.clientX/window.innerWidth-0.5)*80;},false);
+}
+
+function setZone(idx){
+  cur=idx;rdy=false;holdT=0;
+  document.getElementById('shutter').classList.remove('go');
+  document.getElementById('shutter').disabled=!!caps[ZONES[cur].id];
+  document.getElementById('stepBadge').textContent='Step '+(cur+1)+' / 5';
+  document.getElementById('zoneName').textContent=ZONES[cur].label;
+  var segs=progRow.children;
+  for(var i=0;i<segs.length;i++){segs[i].className='prog-seg';if(caps[ZONES[i].id])segs[i].classList.add('done');else if(i===cur)segs[i].classList.add('cur');}
+}
+function showInstr(){
+  var z=ZONES[cur];
+  document.getElementById('instrStep').textContent='STEP '+(cur+1)+' OF 5';
+  document.getElementById('instrTitle').textContent=z.label;
+  document.getElementById('angleDiag').innerHTML=makeDiag(z.dPos,z.beta);
+  var list=document.getElementById('instrList');list.innerHTML='';
+  z.ins.forEach(function(item){var d=document.createElement('div');d.className='il';d.innerHTML='<div class="ico">'+item.i+'</div><div>'+item.t+'</div>';list.appendChild(d);});
+  document.getElementById('instrOv').classList.add('show');
+}
+function dismissInstr(){document.getElementById('instrOv').classList.remove('show');}
+
+/* ═══════════════════════════════════════════════════════════
+   FRAME ANALYSIS — Color Bucket Dominance
+   Runs EVERY frame for smooth streaming
+   ═══════════════════════════════════════════════════════════ */
+function analyzeFrame(){
+  if(!cam.videoWidth||!cam.videoHeight)return;
+  analC.width=AW;analC.height=AH;
+  ac.drawImage(cam,0,0,AW,AH);
+  var imgData;
+  try{imgData=ac.getImageData(0,0,AW,AH);}catch(e){return;}
+  var px=imgData.data;
+
+  var ocx=AW/2,ocy=AH/2;
+  var orx=AW*0.27,ory=orx*1.18;
+
+  /*
+    Color quantization into 4x4x4 = 64 buckets (R,G,B each divided into 4 ranges).
+    Count pixels per bucket inside the oval.
+    Then: dominance = largest bucket / total pixels.
+    High dominance = one surface close up.
+    Low dominance = many surfaces = far/room.
+  */
+  var QDIV=4; /* quantization divisions per channel */
+  var QSTEP=Math.ceil(256/QDIV);
+  var BUCKETS=QDIV*QDIV*QDIV; /* 64 */
+  var buckets=new Int32Array(BUCKETS);
+  var totalPx=0;
+
+  for(var y=0;y<AH;y++){
+    for(var x=0;x<AW;x++){
+      var ex=(x-ocx)/orx, ey=(y-ocy)/ory;
+      if(ex*ex+ey*ey>1)continue;
+
+      var idx=(y*AW+x)*4;
+      var rq=Math.min(QDIV-1,Math.floor(px[idx]/QSTEP));
+      var gq=Math.min(QDIV-1,Math.floor(px[idx+1]/QSTEP));
+      var bq=Math.min(QDIV-1,Math.floor(px[idx+2]/QSTEP));
+      var bi=rq*QDIV*QDIV + gq*QDIV + bq;
+      buckets[bi]++;
+      totalPx++;
+    }
+  }
+
+  if(totalPx<50)return;
+
+  /* Find top 3 buckets and their neighbors */
+  /* A "color group" = a bucket + its 6 adjacent buckets (±1 in R,G,B) */
+  var visited=new Uint8Array(BUCKETS);
+  var groups=[];
+
+  for(var pass=0;pass<6;pass++){
+    /* find largest unvisited bucket */
+    var maxB=-1,maxC=0;
+    for(var b=0;b<BUCKETS;b++){
+      if(!visited[b]&&buckets[b]>maxC){maxC=buckets[b];maxB=b;}
+    }
+    if(maxB===-1||maxC===0)break;
+
+    /* flood-fill adjacent similar buckets */
+    var groupCount=0;
+    var stack=[maxB];
+    while(stack.length>0){
+      var cb=stack.pop();
+      if(visited[cb])continue;
+      visited[cb]=1;
+      groupCount+=buckets[cb];
+
+      /* check 6 neighbors */
+      var cr=Math.floor(cb/(QDIV*QDIV));
+      var cg=Math.floor((cb%(QDIV*QDIV))/QDIV);
+      var cbb=cb%QDIV;
+      var neighbors=[
+        [cr-1,cg,cbb],[cr+1,cg,cbb],
+        [cr,cg-1,cbb],[cr,cg+1,cbb],
+        [cr,cg,cbb-1],[cr,cg,cbb+1]
+      ];
+      for(var n=0;n<neighbors.length;n++){
+        var nr=neighbors[n][0],ng=neighbors[n][1],nb=neighbors[n][2];
+        if(nr<0||nr>=QDIV||ng<0||ng>=QDIV||nb<0||nb>=QDIV)continue;
+        var ni=nr*QDIV*QDIV+ng*QDIV+nb;
+        if(!visited[ni]&&buckets[ni]>totalPx*0.02){
+          stack.push(ni);
+        }
+      }
+    }
+    if(groupCount>totalPx*0.03) groups.push(groupCount);
+  }
+
+  /* Sort groups descending */
+  groups.sort(function(a,b){return b-a;});
+
+  var dominant=(groups.length>0)?(groups[0]/totalPx)*100:0;
+  var numGroups=groups.length;
+
+  /* Scene complexity = inverse of dominance */
+  var complexity=100-dominant;
+
+  D.dominance=dominant;
+  D.numGroups=numGroups;
+  D.complexity=complexity;
+
+  /*
+    Distance mapping from dominance %:
+    
+    dominance 95%+ → ~10cm (extremely close, one color fills everything)
+    dominance 85%  → ~15cm
+    dominance 75%  → ~20cm (entering ideal zone)
+    dominance 65%  → ~25cm (ideal)
+    dominance 55%  → ~30cm (ideal)
+    dominance 45%  → ~38cm
+    dominance 35%  → ~45cm+
+    dominance <30% → 50cm+ (room scene, no close object)
+    
+    Formula: dist = 10 + (95 - dominance) * 0.55
+    Clamped to 8-60cm range
+  */
+  var rawDist;
+  if(dominant<25){
+    /* very low dominance = room scene = no close object */
+    rawDist=60;
+    D.detected=false;
+  }else{
+    rawDist=10 + (95 - Math.min(95,dominant)) * 0.55;
+    rawDist=Math.max(8,Math.min(55,rawDist));
+    D.detected=true;
+  }
+
+  D.dist=rawDist;
+  /* Smooth: fast follow (0.3 old + 0.7 new) for responsive streaming */
+  D.distSmooth=D.distSmooth*0.3+rawDist*0.7;
+
+  /* State */
+  var d=Math.round(D.distSmooth);
+  if(!D.detected){
+    D.state='none';
+  }else if(d<IDEAL_MIN){
+    D.state='too_close';
+  }else if(d>IDEAL_MAX){
+    D.state='too_far';
+  }else{
+    D.state='good';
+  }
+}
+
+/* ═══ Main loop — runs every frame ═══ */
+function loop(){
+  var dpr=window.devicePixelRatio||1;
+  var W=cv.width=cv.clientWidth*dpr;
+  var H=cv.height=cv.clientHeight*dpr;
+  c.clearRect(0,0,W,H);
+
+  /* Analyze EVERY frame for smooth distance streaming */
+  analyzeFrame();
+
+  var z=ZONES[cur];
+  var bErr=Math.abs(S.beta-z.beta),gErr=Math.abs(S.gamma-z.gamma);
+  var tOk=bErr<14,pOk=gErr<14,angleOk=tOk&&pOk;
+
+  var d=Math.round(D.distSmooth);
+  var distGood=D.state==='good';
+  var allOk=angleOk&&distGood;
+  var done=!!caps[z.id];
+
+  var sh=document.getElementById('shutter');
+  if(allOk&&!done){if(!holdT)holdT=Date.now();if(Date.now()-holdT>HOLD){rdy=true;sh.classList.add('go');sh.disabled=false;}}
+  else{holdT=0;rdy=false;sh.classList.remove('go');sh.disabled=done;}
+
+  /* ── Oval ── */
+  var ocx=W/2,ocy=H/2,rx=Math.min(W,H)*0.27,ry=rx*1.18;
+  c.save();c.fillStyle='rgba(0,0,0,0.48)';c.fillRect(0,0,W,H);
+  c.globalCompositeOperation='destination-out';
+  c.beginPath();c.ellipse(ocx,ocy,rx,ry,0,0,Math.PI*2);c.fill();c.restore();
+
+  var col=done?'#00e68a':(allOk?'#00e68a':(!angleOk?'#ff6b6b':(D.state==='too_close'?'#ff6b6b':'#ffa726')));
+  if(D.state==='none'&&!done)col='#ff6b6b';
+  c.strokeStyle=col;c.lineWidth=2.5*dpr;
+  c.beginPath();c.ellipse(ocx,ocy,rx,ry,0,0,Math.PI*2);c.stroke();
+
+  if(allOk&&!done){
+    c.save();c.shadowColor='rgba(0,230,138,0.45)';c.shadowBlur=20*dpr;
+    c.strokeStyle='rgba(0,230,138,0.2)';c.lineWidth=7*dpr;
+    c.beginPath();c.ellipse(ocx,ocy,rx,ry,0,0,Math.PI*2);c.stroke();c.restore();
+  }
+
+  if(!angleOk&&!done){
+    var adx=0,ady=0;
+    if(!tOk)ady=S.beta<z.beta?1:-1;if(!pOk)adx=S.gamma<z.gamma?-1:1;
+    var aL=22*dpr,arX=ocx+adx*rx*0.55,arY=ocy+ady*ry*0.55,ang=Math.atan2(ady,adx);
+    c.save();c.translate(arX,arY);c.rotate(ang);c.fillStyle='rgba(255,107,107,0.85)';
+    c.beginPath();c.moveTo(aL,0);c.lineTo(-aL*.4,-aL*.55);c.lineTo(-aL*.4,aL*.55);c.closePath();c.fill();c.restore();
+  }
+
+  /* Distance text on canvas */
+  if(!done&&angleOk){
+    var dtxt='',dcol='';
+    if(D.state==='none'){dtxt='Point camera at scalp';dcol='rgba(255,107,107,0.9)';}
+    else if(D.state==='too_close'){dtxt='← Back up to '+IDEAL_MIN+'cm →';dcol='rgba(255,107,107,0.9)';}
+    else if(D.state==='too_far'){dtxt='→ Move closer to '+IDEAL_MAX+'cm ←';dcol='rgba(255,167,38,0.9)';}
+    if(dtxt){c.font='bold '+(13*dpr)+'px -apple-system,sans-serif';c.fillStyle=dcol;c.textAlign='center';c.fillText(dtxt,ocx,ocy+ry+25*dpr);}
+  }
+
+  c.strokeStyle='rgba(255,255,255,0.18)';c.lineWidth=1*dpr;
+  c.beginPath();c.moveTo(ocx-7*dpr,ocy);c.lineTo(ocx+7*dpr,ocy);c.moveTo(ocx,ocy-7*dpr);c.lineTo(ocx,ocy+7*dpr);c.stroke();
+
+  /* ── Distance HUD ── */
+  var dh=document.getElementById('distHud');
+  var dv=document.getElementById('dVal');
+  var dt=document.getElementById('dTag');
+  var st=D.state;
+
+  if(st==='none'){
+    dv.textContent='—';dv.className='d-val none';dt.textContent='no object';dt.className='d-tag none';dh.className='dist-hud none';
+  }else{
+    dv.textContent=d;
+    if(st==='good'){dv.className='d-val ok';dt.textContent=IDEAL_MIN+'-'+IDEAL_MAX+'cm ✓';dt.className='d-tag ok';dh.className='dist-hud ok';}
+    else if(st==='too_close'){dv.className='d-val close';dt.textContent='too close';dt.className='d-tag close';dh.className='dist-hud close';}
+    else{dv.className='d-val far';dt.textContent='too far';dt.className='d-tag far';dh.className='dist-hud far';}
+  }
+
+  /* Range bar pointer */
+  var rMin=10,rMax=55;
+  var rPct=Math.max(0,Math.min(100,((d-rMin)/(rMax-rMin))*100));
+  if(st==='none')rPct=100;
+  document.getElementById('rangePtr').style.left=rPct+'%';
+
+  /* ── Indicators ── */
+  document.getElementById('dAngle').className='dot-i '+(angleOk?'ok':'bad');
+  document.getElementById('lAngle').textContent=angleOk?'Angle ✓':'Angle ✗';
+  var distDot=document.getElementById('dDist');
+  var distLbl=document.getElementById('lDist');
+  if(st==='good'){distDot.className='dot-i ok';distLbl.textContent=d+'cm ✓';}
+  else if(st==='too_close'){distDot.className='dot-i bad';distLbl.textContent=d+'cm close';}
+  else if(st==='too_far'){distDot.className='dot-i warn';distLbl.textContent=d+'cm far';}
+  else{distDot.className='dot-i bad';distLbl.textContent='no object';}
+
+  /* ── Guidance ── */
+  var gm=document.getElementById('gMsg'),gs=document.getElementById('gSub');
+  if(done){gm.textContent='✓ '+z.label+' captured';gm.className='guide-msg ok';gs.textContent='';}
+  else if(allOk){gm.textContent='Perfect — tap to capture';gm.className='guide-msg ok';gs.textContent=d+'cm · angle and distance correct';}
+  else{
+    var h=[];
+    if(!tOk)h.push(S.beta<z.beta?'Tilt forward ↓':'Tilt upright ↑');
+    if(!pOk)h.push(S.gamma<z.gamma?'Rotate left ←':'Rotate right →');
+    if(st==='none')h.push('Point at scalp');
+    else if(st==='too_close')h.push('Back up ('+d+'→'+IDEAL_MIN+'cm)');
+    else if(st==='too_far')h.push('Closer ('+d+'→'+IDEAL_MAX+'cm)');
+    gm.textContent=h.join('  ·  ');gm.className='guide-msg bad';
+    gs.textContent='Ideal: '+IDEAL_MIN+'–'+IDEAL_MAX+' cm';
+  }
+
+  /* ── Debug ── */
+  var dl=[];
+  dl.push('<b>Sensor:</b>'+(sOK?' <span class="g">ON</span>':' <span class="r">OFF</span>')+' β=<span class="v">'+f(S.beta)+'°</span> γ=<span class="v">'+f(S.gamma)+'°</span> '+(angleOk?'<span class="g">✓</span>':'<span class="r">✗</span> β-err=<span class="r">'+f(bErr)+'°</span> γ-err=<span class="r">'+f(gErr)+'°</span>'));
+  dl.push('<b>Scene:</b> dominance=<span class="v">'+f(D.dominance)+'%</span> groups=<span class="v">'+D.numGroups+'</span> complexity=<span class="v">'+f(D.complexity)+'</span> detected=<span class="'+(D.detected?'g':'r')+'">'+(D.detected?'YES':'NO')+'</span>');
+  dl.push('<b>Dist:</b> raw=<span class="v">'+f(D.dist)+'cm</span> smooth=<span class="'+(distGood?'g':(st==='too_close'?'r':'y'))+'">'+d+'cm</span> state=<span class="'+(st==='good'?'g':(st==='none'?'r':'y'))+'">'+st.toUpperCase()+'</span>');
+  dl.push(allOk?'<span class="g">✓ READY</span>':'<span class="r">✗ NOT READY</span>');
+  document.getElementById('dbg').innerHTML=dl.join('<br>');
+
+  requestAnimationFrame(loop);
+}
+
+function f(v){return typeof v==='number'?v.toFixed(1):'—';}
+
+function capture(){
+  if(!rdy&&!caps[ZONES[cur].id])return;
+  var fl=document.getElementById('fl');fl.style.opacity='0.6';setTimeout(function(){fl.style.opacity='0';},120);
+  var cc=document.createElement('canvas');cc.width=cam.videoWidth||1280;cc.height=cam.videoHeight||720;
+  cc.getContext('2d').drawImage(cam,0,0,cc.width,cc.height);
+  var url;try{url=cc.toDataURL('image/jpeg',0.9);}catch(e){url=cc.toDataURL();}
+  document.getElementById('revImg').src=url;
+  document.getElementById('revLbl').textContent='Step '+(cur+1)+' — '+ZONES[cur].label;
+  document.getElementById('revOv').classList.add('show');
+}
+function retake(){document.getElementById('revOv').classList.remove('show');holdT=0;}
+/* ═══ Download helpers — works on iPhone + Android ═══ */
+function dataURLtoBlob(dataURL){
+  var parts=dataURL.split(',');
+  var mime=parts[0].match(/:(.*?);/)[1];
+  var raw=atob(parts[1]);
+  var arr=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+
+function saveImage(dataURL, filename){
+  var blob=dataURLtoBlob(dataURL);
+  var file=new File([blob],filename,{type:'image/jpeg'});
+
+  /* Method 1: Web Share API (iPhone share sheet → Save Image) */
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:filename}).catch(function(){
+      /* user cancelled share sheet — try fallback */
+      blobDownload(blob,filename);
+    });
+    return;
+  }
+
+  /* Method 2: Blob download (Android Chrome, desktop) */
+  blobDownload(blob,filename);
+}
+
+function blobDownload(blob,filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },500);
+}
+
+function dlCurrent(){
+  var z=ZONES[cur];
+  var src=document.getElementById('revImg').src;
+  saveImage(src,'scalp_'+z.id+'_'+Date.now()+'.jpg');
+}
+
+function acceptAndDl(){
+  /* save to caps first, then download, then advance */
+  caps[ZONES[cur].id]=document.getElementById('revImg').src;
+  dlCurrent();
+  document.getElementById('revOv').classList.remove('show');
+  progRow.children[cur].classList.add('done');progRow.children[cur].classList.remove('cur');
+  if(Object.keys(caps).length>=ZONES.length){setTimeout(showDone,300);return;}
+  for(var i=0;i<ZONES.length;i++){var n=(cur+1+i)%ZONES.length;if(!caps[ZONES[n].id]){setZone(n);setTimeout(showInstr,200);return;}}
+}
+
+function accept(){
+  caps[ZONES[cur].id]=document.getElementById('revImg').src;
+  document.getElementById('revOv').classList.remove('show');
+  progRow.children[cur].classList.add('done');progRow.children[cur].classList.remove('cur');
+  if(Object.keys(caps).length>=ZONES.length){setTimeout(showDone,300);return;}
+  for(var i=0;i<ZONES.length;i++){var n=(cur+1+i)%ZONES.length;if(!caps[ZONES[n].id]){setZone(n);setTimeout(showInstr,200);return;}}
+}
+
+function showDone(){
+  var t=document.getElementById('thumbs');t.innerHTML='';
+  ZONES.forEach(function(z){
+    if(!caps[z.id])return;
+    var w=document.createElement('div');w.className='th-w';
+    var im=document.createElement('img');im.src=caps[z.id];
+    im.onclick=(function(zz){return function(){saveImage(caps[zz.id],'scalp_'+zz.id+'.jpg');};})(z);
+    im.style.cursor='pointer';
+    var lb=document.createElement('div');lb.className='th-l';lb.textContent=z.label.split('/')[0].trim();
+    w.appendChild(im);w.appendChild(lb);t.appendChild(w);
+  });
+  document.getElementById('doneS').classList.add('show');
+}
+
+function dlAll(){
+  /* Build all files, share as batch or download one by one */
+  var files=[];
+  ZONES.forEach(function(z){
+    if(!caps[z.id])return;
+    var blob=dataURLtoBlob(caps[z.id]);
+    files.push(new File([blob],'scalp_'+z.id+'.jpg',{type:'image/jpeg'}));
+  });
+
+  /* Try batch share (iPhone) */
+  if(files.length>0 && navigator.canShare && navigator.canShare({files:files})){
+    navigator.share({files:files,title:'Scalp Captures'}).catch(function(){
+      /* fallback: download individually */
+      files.forEach(function(f){blobDownload(f,f.name);});
+    });
+    return;
+  }
+
+  /* Fallback: download one by one */
+  ZONES.forEach(function(z){
+    if(!caps[z.id])return;
+    var blob=dataURLtoBlob(caps[z.id]);
+    blobDownload(blob,'scalp_'+z.id+'.jpg');
+  });
+}
+</script>
+</body>
+</html>
