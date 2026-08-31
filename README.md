@@ -26,6 +26,10 @@ rootinly/
 │   ├── best.pt               # Custom trained YOLOv8 Segmentation weights (Module 1)
 │   └── best_norwood.pt       # Custom trained YOLOv8 Norwood Classification weights (Module 2)
 │
+├── logs/                     # Isolated request execution logs
+│   ├── growth_comparison/    # Module 1 (Crown Growth Comparison) logs
+│   └── stage_determiner/     # Module 2 (Hairfall Stage Determiner) logs
+│
 ├── src/                      # Production source package
 │   └── rootinly/
 │       ├── __init__.py
@@ -35,17 +39,17 @@ rootinly/
 │       │   ├── __init__.py
 │       │   ├── analysis.py   # VisitMetrics, Deltas, Visualizations, LogEntry
 │       │   ├── response.py   # ComparisonResponse, HealthResponse, ErrorResponse
-│       │   └── stage.py      # StageResponse, StageLogsListResponse
+│       │   └── stage.py      # StageResponse
 │       ├── core/             # AI & Computer Vision pipelines
 │       │   ├── __init__.py
 │       │   ├── preprocessor.py    # Image decoding, alignment, Base64 conversion
-│       │   ├── segmentor.py       # YOLOv8 crown/hairline segmentation
+│       │   ├── segmentor.py       # Batched YOLOv8 crown/hairline segmentation
 │       │   ├── analyzer.py        # HSV scalp filtering & density calculation
 │       │   ├── pipeline.py        # Crown comparison orchestration
-│       │   └── stage_determiner.py# Local YOLOv8 Norwood classification service & logging
+│       │   └── stage_determiner.py# Local YOLOv8 Norwood classification service & gate
 │       └── api/              # FastAPI Application layer
 │           ├── __init__.py
-│           ├── app.py        # Unified FastAPI factory & lifespan setup
+│           ├── app.py        # Unified FastAPI factory, lifespan & Swagger tags
 │           ├── dependencies.py # Singleton dependency providers
 │           └── routes/       # Modular API route controllers
 │               ├── __init__.py
@@ -53,11 +57,8 @@ rootinly/
 │               ├── comparison.py # /compare-crowns, /api/v1/crown/health & web UI
 │               └── stage.py  # /predict-stage & /api/v1/stage/health
 │
-├── stage_determiner/         # Stage determiner storage
-│   └── logs/                 # Dedicated stage prediction execution logs
-│
 ├── static/                   # Web frontend assets
-│   └── index.html            # Unified single-page clinical dashboard
+│   └── index.html            # Single-page dashboard with client-side WebP compression
 │
 ├── scripts/                  # Command-line utilities
 │   ├── run_server.py         # CLI launcher proxy
@@ -84,14 +85,16 @@ rootinly/
 ## Features
 
 - **Dual-Module Unified Service**: Both Crown Comparison and Stage Determination run from a single FastAPI server via `python main.py`.
-- **Custom YOLOv8 Segmentation**: Organic hairline and crown ROI extraction eliminating background noise.
-- **Follicular Density Analysis**: Precise pixel-level ratio calculations between hair follicles and exposed scalp.
+- **Batched YOLOv8 Segmentation**: Organic hairline and crown ROI extraction processing baseline and follow-up images in a single forward pass (~45% speedup).
+- **Two-Stage Head Verification Gate**: Both modules verify head/scalp presence using YOLO segmentation, raising `"No head detected"` if invalid photos are uploaded.
+- **Follicular Density Analysis**: Precise pixel-level ratio calculations between hair follicles and exposed scalp via HSV color space separation.
 - **Clinical Delta Tracking**: Automatic percentage change calculation across patient visits.
-- **Follicular Visual Overlays**: High-resolution segmentation heatmaps (Green for hair, Orange for exposed scalp, Cyan for head contour).
-- **Hairfall Stage Classification**: Scalp image evaluation delivering exact stage level and classification confidence percentage.
-- **Clean Single-Page Frontend**: Modern, responsive dark-theme interface with zero external dependencies and seamless tab switching.
-- **Dedicated Request Logging**: Timestamped diagnostic logs maintained for both Crown Comparison (`logs/`) and Stage Determiner (`stage_determiner/logs/`).
-- **Production-Ready**: High-throughput async endpoints, comprehensive test suite, Docker containerization, and automated Swagger UI (`/docs`).
+- **Follicular Visual Overlays**: High-resolution blended heatmaps (Green for hair, Orange for exposed scalp, Cyan for head contour).
+- **Hairfall Stage Classification**: Local YOLOv8 Norwood Scale classifier (`best_norwood.pt`) predicting Stage 1–7 with confidence scores.
+- **Client-Side WebP Compression**: Frontend HTML5 Canvas converts images to compact WebP format on the client device before upload (98% bandwidth reduction).
+- **Non-Blocking Async Execution**: Heavy CPU/GPU inferences are executed via `asyncio.to_thread` on a dedicated thread pool to maintain event loop responsiveness.
+- **Dedicated Request Logging**: Timestamped diagnostic logs isolated under `logs/growth_comparison/` and `logs/stage_determiner/`.
+- **Production-Ready**: Multi-user async concurrency, comprehensive test suite (24 tests), Docker containerization, and structured Swagger UI (`/docs`).
 
 ---
 
@@ -173,7 +176,7 @@ FastAPI provides automated interactive API documentation:
   "pipeline": "yolov8_segmentation",
   "response_time_ms": 142.5,
   "response_time_formatted": "142.5 ms",
-  "log_file": "logs/2026-08-26_19-46-55.log",
+  "log_file": "logs/growth_comparison/2026-08-26_19-46-55.log",
   "timestamp": "2026-08-26T19:46:55.123456",
   "previous_visit": {
     "hair_density_percent": 68.45,
