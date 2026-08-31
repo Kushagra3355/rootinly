@@ -1044,6 +1044,62 @@
     });
 
     // -------------------------------------------------------
+    // Client-Side Image Compression & WebP Conversion
+    // -------------------------------------------------------
+    async function compressToWebP(file, maxDimension = 1024, quality = 0.88) {
+      if (!file || !file.type.startsWith('image/')) {
+        return file;
+      }
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            let width = img.width;
+            let height = img.height;
+
+            // Preserve aspect ratio with bounded max dimension
+            if (width > height && width > maxDimension) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else if (height > maxDimension) {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+              function(blob) {
+                if (blob) {
+                  const originalName = (file.name || 'image').replace(/\.[^/.]+$/, '');
+                  const webpFile = new File([blob], `${originalName}.webp`, { type: 'image/webp' });
+                  resolve(webpFile);
+                } else {
+                  resolve(file);
+                }
+              },
+              'image/webp',
+              quality
+            );
+          };
+          img.onerror = function() {
+            resolve(file);
+          };
+          img.src = e.target.result;
+        };
+        reader.onerror = function() {
+          resolve(file);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // -------------------------------------------------------
     // MODULE 1: Crown Hair Comparison Submission
     // -------------------------------------------------------
     const crownForm = document.getElementById('crownForm');
@@ -1063,16 +1119,22 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('last_visit_image', lastFile);
-      formData.append('today_visit_image', todayFile);
-
       crownSubmitBtn.disabled = true;
       crownSubmitBtn.style.display = 'none';
       crownLoading.style.display = 'block';
       crownResults.style.display = 'none';
 
       try {
+        // Compress both images to lightweight WebP in parallel on the client side
+        const [compressedLast, compressedToday] = await Promise.all([
+          compressToWebP(lastFile),
+          compressToWebP(todayFile)
+        ]);
+
+        const formData = new FormData();
+        formData.append('last_visit_image', compressedLast);
+        formData.append('today_visit_image', compressedToday);
+
         const response = await fetch('/compare-crowns', {
           method: 'POST',
           body: formData
@@ -1156,15 +1218,18 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', stageFile);
-
       stageSubmitBtn.disabled = true;
       stageSubmitBtn.style.display = 'none';
       stageLoading.style.display = 'block';
       stageResults.style.display = 'none';
 
       try {
+        // Compress scalp image to lightweight WebP on the client side
+        const compressedStage = await compressToWebP(stageFile);
+
+        const formData = new FormData();
+        formData.append('file', compressedStage);
+
         const response = await fetch('/predict-stage', {
           method: 'POST',
           body: formData
