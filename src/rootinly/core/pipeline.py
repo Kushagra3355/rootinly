@@ -55,10 +55,10 @@ class CrownComparisonPipeline:
         h_ref, w_ref = img_last.shape[:2]
         exec_logger.log(f"Aligned images to resolution {w_ref}x{h_ref}")
 
-        # 3. AI Segmentation Mask Extraction
+        # 3. Batched AI Segmentation Mask Extraction (Single Forward Pass)
         try:
-            mask_last = self.segmentor.extract_mask(img_last)
-            mask_today = self.segmentor.extract_mask(img_today)
+            masks = self.segmentor.extract_masks_batch([img_last, img_today])
+            mask_last, mask_today = masks[0], masks[1]
         except ValueError as ve:
             exec_logger.log(f"Head segmentation failed: {str(ve)}", level="ERROR")
             raise ValueError(str(ve)) from ve

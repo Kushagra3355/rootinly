@@ -40,9 +40,56 @@ class CrownSegmentor:
         """Checks if the YOLO model is successfully loaded."""
         return self.model is not None
 
+    def extract_masks_batch(
+        self, images: list, conf: Optional[float] = None
+    ) -> list:
+        """
+        Extracts binary head/crown masks for multiple images in a single batched YOLO forward pass.
+        
+        Args:
+            images: List of OpenCV BGR images (np.ndarray).
+            conf: Optional confidence threshold override.
+            
+        Returns:
+            list: List of binary masks (np.ndarray) of shape (H, W) where 1 = Crown ROI, 0 = Background.
+
+        Raises:
+            RuntimeError: If YOLO segmentation model is not loaded.
+            ValueError: If no head is detected in one of the images.
+        """
+        if not images:
+            return []
+
+        if self.model is None:
+            logger.error("YOLO segmentation model is not loaded.")
+            raise RuntimeError("YOLO segmentation model is not loaded.")
+
+        conf_thresh = conf if conf is not None else self.confidence
+        # Batched forward pass on all images simultaneously
+        results = self.model.predict(source=images, conf=conf_thresh, verbose=False)
+
+        binary_masks = []
+        for i, (img, res) in enumerate(zip(images, results)):
+            h, w = img.shape[:2]
+            if res.masks is not None and len(res.masks.data) > 0:
+                mask_data = res.masks.data[0].cpu().numpy()
+                mask_resized = cv2.resize(mask_data, (w, h), interpolation=cv2.INTER_NEAREST)
+                binary_mask = (mask_resized > 0.5).astype(np.uint8)
+
+                if int(np.sum(binary_mask)) == 0:
+                    logger.warning(f"No head mask detected by YOLO for image index {i}.")
+                    raise ValueError("No head detected")
+
+                binary_masks.append(binary_mask)
+            else:
+                logger.warning(f"No head mask detected by YOLO for image index {i}.")
+                raise ValueError("No head detected")
+
+        return binary_masks
+
     def extract_mask(self, image: np.ndarray, conf: Optional[float] = None) -> np.ndarray:
         """
-        Extracts the head/crown binary mask using the YOLO segmentation model.
+        Extracts the head/crown binary mask for a single image using the YOLO segmentation model.
         
         Args:
             image: OpenCV BGR image (np.ndarray).
@@ -55,30 +102,4 @@ class CrownSegmentor:
             RuntimeError: If YOLO segmentation model is not loaded.
             ValueError: If no head is detected in the image.
         """
-        h, w = image.shape[:2]
-
-        if self.model is None:
-            logger.error("YOLO segmentation model is not loaded.")
-            raise RuntimeError("YOLO segmentation model is not loaded.")
-
-        conf_thresh = conf if conf is not None else self.confidence
-        results = self.model.predict(source=image, conf=conf_thresh, verbose=False)
-
-        if len(results) > 0 and results[0].masks is not None and len(results[0].masks.data) > 0:
-            # Extract raw mask data tensor for the primary detected head segment
-            mask_data = results[0].masks.data[0].cpu().numpy()
-            
-            # YOLO internally resizes images to 640x640; resize mask back to source image dimensions
-            mask_resized = cv2.resize(mask_data, (w, h), interpolation=cv2.INTER_NEAREST)
-            
-            # Convert probabilities to binary mask (1 for crown/hair, 0 for background)
-            binary_mask = (mask_resized > 0.5).astype(np.uint8)
-
-            if int(np.sum(binary_mask)) == 0:
-                logger.warning("No head mask detected by YOLO.")
-                raise ValueError("No head detected")
-
-            return binary_mask
-        else:
-            logger.warning("No head mask detected by YOLO.")
-            raise ValueError("No head detected")
+        return self.extract_masks_batch([image], conf=conf)[0]

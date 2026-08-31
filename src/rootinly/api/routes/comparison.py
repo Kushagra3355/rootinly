@@ -1,4 +1,5 @@
 """Crown hair comparison and frontend routes."""
+import asyncio
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from src.rootinly.api.dependencies import get_pipeline, get_segmentor
@@ -44,7 +45,9 @@ async def compare_crown_photos(
         bytes_last = await last_visit_image.read()
         bytes_today = await today_visit_image.read()
 
-        response = pipeline.process(
+        # Non-blocking async thread execution
+        response = await asyncio.to_thread(
+            pipeline.process,
             last_bytes=bytes_last,
             today_bytes=bytes_today,
             last_filename=last_visit_image.filename or "baseline.jpg",

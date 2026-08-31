@@ -1,4 +1,5 @@
 """Hairfall stage determination API routes."""
+import asyncio
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from src.rootinly.api.dependencies import get_stage_determiner
 from src.rootinly.core.stage_determiner import StageDeterminerService
@@ -42,7 +43,9 @@ async def predict_hairfall_stage(
         if not image_bytes:
             raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
-        response = service.predict(
+        # Non-blocking async thread execution
+        response = await asyncio.to_thread(
+            service.predict,
             image_bytes=image_bytes,
             filename=filename,
             content_type=content_type,
