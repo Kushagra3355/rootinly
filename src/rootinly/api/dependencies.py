@@ -29,6 +29,7 @@ def get_stage_determiner() -> StageDeterminerService:
     """Provides a singleton instance of StageDeterminerService."""
     global _stage_determiner_instance
     if _stage_determiner_instance is None:
-        _stage_determiner_instance = StageDeterminerService()
+        segmentor = get_segmentor()
+        _stage_determiner_instance = StageDeterminerService(segmentor=segmentor)
     return _stage_determiner_instance
 

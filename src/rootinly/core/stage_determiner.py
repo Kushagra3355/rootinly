@@ -98,9 +98,11 @@ class StageDeterminerService:
     def __init__(
         self,
         model_path: Optional[Path] = None,
+        segmentor: Optional[Any] = None,
         logs_dir: Optional[Path] = None,
     ):
         self.model_path = model_path or settings.get_stage_model_path()
+        self.segmentor = segmentor
         self.logs_dir = logs_dir or settings.STAGE_LOGS_DIR
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.model: Optional[YOLO] = None
@@ -141,7 +143,8 @@ class StageDeterminerService:
         content_type: str = "image/jpeg",
     ) -> StageResponse:
         """
-        Processes image bytes, runs local YOLOv8 Norwood classification inference,
+        Processes image bytes, verifies head presence via CrownSegmentor,
+        runs local YOLOv8 Norwood classification inference,
         and returns structured StageResponse with execution logs.
         """
         exec_logger = StageExecutionLogger(logs_dir=self.logs_dir)
@@ -171,7 +174,17 @@ class StageDeterminerService:
 
         h, w = img.shape[:2]
         exec_logger.log(f"Decoded image dimensions: {w}x{h} (channels: 3).")
-        exec_logger.log(f"Running inference using local YOLO model '{self.model_path.name}'...")
+
+        # Head Verification Gate: Ensure head/scalp is present in photo
+        if self.segmentor is not None:
+            exec_logger.log("Verifying head presence using YOLO segmentation...")
+            try:
+                self.segmentor.extract_mask(img)
+            except ValueError as ve:
+                exec_logger.log(f"Head verification failed: {str(ve)}", level="ERROR")
+                raise ValueError("No head detected") from ve
+
+        exec_logger.log(f"Head verified. Running inference using local YOLO model '{self.model_path.name}'...")
 
         try:
             results = self.model.predict(source=img, verbose=False)
