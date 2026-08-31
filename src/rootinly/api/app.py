@@ -6,7 +6,9 @@ from fastapi.staticfiles import StaticFiles
 from src.rootinly.api.dependencies import get_segmentor, get_stage_determiner
 from src.rootinly.api.routes.comparison import router as comparison_router
 from src.rootinly.api.routes.stage import router as stage_router
+from src.rootinly.api.routes.feedback import router as feedback_router
 from src.rootinly.api.routes.health import router as health_router
+
 from src.rootinly.config import settings
 from src.rootinly.logger import logger
 
@@ -86,9 +88,11 @@ def create_app() -> FastAPI:
     # API Routes for both modules & health
     app.include_router(comparison_router)
     app.include_router(stage_router)
+    app.include_router(feedback_router)
     app.include_router(health_router, prefix="/api/v1")
 
     return app
+
 
 app = create_app()
 

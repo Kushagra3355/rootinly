@@ -70,6 +70,16 @@ class Settings:
     OVERLAY_ALPHA: float = 0.45
     OVERLAY_BETA: float = 0.55
 
+    # Firebase Integration
+    FIREBASE_CREDENTIALS_PATH: Path = field(
+        default_factory=lambda: Path(
+            os.getenv("FIREBASE_CREDENTIALS_PATH", str(BASE_DIR / "firebaseServiceAccount.json"))
+        )
+    )
+    FIREBASE_STORAGE_BUCKET: str = os.getenv("FIREBASE_STORAGE_BUCKET", "peek-ai.firebasestorage.app")
+
+
+
     def get_active_model_path(self) -> Path:
         """Returns the active segmentation model weight path."""
         return self.MODEL_PATH

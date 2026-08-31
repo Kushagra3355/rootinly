@@ -1,4 +1,4 @@
-﻿# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -33,6 +33,11 @@ ENV/
 # Environment Variables
 .env
 .env.local
+firebase-credentials.json
+firebaseServiceAccount.json
+*-firebase-adminsdk-*.json
+
+
 
 # Logs and outputs
 logs/*.log

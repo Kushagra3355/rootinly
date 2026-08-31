@@ -670,7 +670,239 @@
       color: var(--text-dim);
       padding-top: 2rem;
     }
+
+    /* Clinical Feedback Questionnaire Section */
+    .feedback-card {
+      margin-top: 2rem;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .feedback-header {
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      padding-bottom: 0.75rem;
+    }
+
+    .feedback-header h4 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .feedback-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .feedback-questions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .feedback-question-block {
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(51, 65, 85, 0.45);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .feedback-question-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .feedback-question-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed rgba(51, 65, 85, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .feedback-question-label {
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .feedback-question-sublabel {
+      color: var(--text-muted);
+      font-size: 0.825rem;
+      font-weight: 500;
+    }
+
+    .feedback-options {
+      display: flex;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .feedback-chip {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.825rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: #cbd5e1;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .feedback-chip input[type="radio"] {
+      accent-color: #3b82f6;
+      cursor: pointer;
+    }
+
+    .feedback-chip:hover {
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    .feedback-pct-wrapper {
+      display: inline-flex;
+      align-items: center;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem 0.55rem;
+      width: 100px;
+      flex-shrink: 0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .feedback-pct-wrapper:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    .feedback-pct-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-align: right;
+      outline: none;
+      padding-right: 2px;
+      font-family: inherit;
+    }
+
+    .feedback-pct-input::-webkit-outer-spin-button,
+    .feedback-pct-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .feedback-pct-input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .feedback-pct-unit {
+      color: #60a5fa;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-left: 0.25rem;
+      user-select: none;
+    }
+
+
+
+    .feedback-notes {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 0.85rem;
+      font-family: inherit;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .feedback-notes:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .feedback-submit-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.8rem 1.25rem;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .feedback-submit-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .feedback-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .feedback-status-banner {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .feedback-status-banner.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+    }
+
+    .feedback-status-banner.warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+    }
   </style>
+
 </head>
 <body>
 
@@ -855,8 +1087,200 @@
             </div>
           </div>
         </div>
+
+        <!-- User Validation & Quality Feedback Form -->
+        <div class="feedback-card" id="crownFeedbackSection">
+          <div class="feedback-header">
+            <h4>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+              </svg>
+              Clinical Quality & Accuracy Feedback
+            </h4>
+            <p>Help us validate the AI analysis. Your feedback and the comparison images will be recorded in Firebase.</p>
+          </div>
+
+          <form id="crownFeedbackForm">
+            <div class="feedback-questions-list">
+              <!-- Q1 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">1. Is the previous (baseline) image masking correct?</span>
+                  <div class="feedback-options">
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_prev_mask" value="true" required> Yes
+                    </label>
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_prev_mask" value="false" required> No
+                    </label>
+                  </div>
+                </div>
+                <div class="feedback-question-bottom">
+                  <span class="feedback-question-sublabel">How much percent is it correct (0 to 100)?</span>
+                  <div class="feedback-pct-wrapper">
+                    <input 
+                      type="text" 
+                      inputmode="numeric" 
+                      id="q_prev_mask_pct" 
+                      name="q_prev_mask_pct" 
+                      class="feedback-pct-input" 
+                      placeholder="0-100" 
+                      maxlength="3" 
+                      required 
+                      onkeydown="return event.key === 'Backspace' || event.key === 'Delete' || event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab' || (event.key >= '0' && event.key <= '9')"
+                      oninput="let clean = this.value.replace(/[^0-9]/g, ''); if (clean !== '') { let n = parseInt(clean, 10); if (n > 100) clean = '100'; else if (n < 0) clean = '0'; else clean = String(n); } this.value = clean;">
+                    <span class="feedback-pct-unit">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q2 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">2. Is the current (today) image masked correctly?</span>
+                  <div class="feedback-options">
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_curr_mask" value="true" required> Yes
+                    </label>
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_curr_mask" value="false" required> No
+                    </label>
+                  </div>
+                </div>
+                <div class="feedback-question-bottom">
+                  <span class="feedback-question-sublabel">How much percent is it correct (0 to 100)?</span>
+                  <div class="feedback-pct-wrapper">
+                    <input 
+                      type="text" 
+                      inputmode="numeric" 
+                      id="q_curr_mask_pct" 
+                      name="q_curr_mask_pct" 
+                      class="feedback-pct-input" 
+                      placeholder="0-100" 
+                      maxlength="3" 
+                      required 
+                      onkeydown="return event.key === 'Backspace' || event.key === 'Delete' || event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab' || (event.key >= '0' && event.key <= '9')"
+                      oninput="let clean = this.value.replace(/[^0-9]/g, ''); if (clean !== '') { let n = parseInt(clean, 10); if (n > 100) clean = '100'; else if (n < 0) clean = '0'; else clean = String(n); } this.value = clean;">
+                    <span class="feedback-pct-unit">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q3 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">3. Is the hair and scalp classified correctly for baseline image?</span>
+                  <div class="feedback-options">
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_prev_class" value="true" required> Yes
+                    </label>
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_prev_class" value="false" required> No
+                    </label>
+                  </div>
+                </div>
+                <div class="feedback-question-bottom">
+                  <span class="feedback-question-sublabel">How much percent is it correct (0 to 100)?</span>
+                  <div class="feedback-pct-wrapper">
+                    <input 
+                      type="text" 
+                      inputmode="numeric" 
+                      id="q_prev_class_pct" 
+                      name="q_prev_class_pct" 
+                      class="feedback-pct-input" 
+                      placeholder="0-100" 
+                      maxlength="3" 
+                      required 
+                      onkeydown="return event.key === 'Backspace' || event.key === 'Delete' || event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab' || (event.key >= '0' && event.key <= '9')"
+                      oninput="let clean = this.value.replace(/[^0-9]/g, ''); if (clean !== '') { let n = parseInt(clean, 10); if (n > 100) clean = '100'; else if (n < 0) clean = '0'; else clean = String(n); } this.value = clean;">
+                    <span class="feedback-pct-unit">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q4 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">4. Hair and scalp classification correct for current image?</span>
+                  <div class="feedback-options">
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_curr_class" value="true" required> Yes
+                    </label>
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_curr_class" value="false" required> No
+                    </label>
+                  </div>
+                </div>
+                <div class="feedback-question-bottom">
+                  <span class="feedback-question-sublabel">How much percent is it correct (0 to 100)?</span>
+                  <div class="feedback-pct-wrapper">
+                    <input 
+                      type="text" 
+                      inputmode="numeric" 
+                      id="q_curr_class_pct" 
+                      name="q_curr_class_pct" 
+                      class="feedback-pct-input" 
+                      placeholder="0-100" 
+                      maxlength="3" 
+                      required 
+                      onkeydown="return event.key === 'Backspace' || event.key === 'Delete' || event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab' || (event.key >= '0' && event.key <= '9')"
+                      oninput="let clean = this.value.replace(/[^0-9]/g, ''); if (clean !== '') { let n = parseInt(clean, 10); if (n > 100) clean = '100'; else if (n < 0) clean = '0'; else clean = String(n); } this.value = clean;">
+                    <span class="feedback-pct-unit">%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q5 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">5. Is the overall comparison result valid?</span>
+                  <div class="feedback-options">
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_result_valid" value="true" required> Yes
+                    </label>
+                    <label class="feedback-chip">
+                      <input type="radio" name="q_result_valid" value="false" required> No
+                    </label>
+                  </div>
+                </div>
+                <div class="feedback-question-bottom">
+                  <span class="feedback-question-sublabel">How much percent is it correct (0 to 100)?</span>
+                  <div class="feedback-pct-wrapper">
+                    <input 
+                      type="text" 
+                      inputmode="numeric" 
+                      id="q_result_valid_pct" 
+                      name="q_result_valid_pct" 
+                      class="feedback-pct-input" 
+                      placeholder="0-100" 
+                      maxlength="3" 
+                      required 
+                      onkeydown="return event.key === 'Backspace' || event.key === 'Delete' || event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Tab' || (event.key >= '0' && event.key <= '9')"
+                      oninput="let clean = this.value.replace(/[^0-9]/g, ''); if (clean !== '') { let n = parseInt(clean, 10); if (n > 100) clean = '100'; else if (n < 0) clean = '0'; else clean = String(n); } this.value = clean;">
+                    <span class="feedback-pct-unit">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+            <textarea 
+              class="feedback-notes" 
+              id="feedbackNotes" 
+              rows="2" 
+              placeholder="Optional notes or clinical observations..."></textarea>
+
+            <button type="submit" id="feedbackSubmitBtn" class="feedback-submit-btn">
+              <span>Submit Validation Feedback</span>
+            </button>
+          </form>
+
+          <div id="feedbackBanner" class="feedback-status-banner"></div>
+        </div>
       </div>
     </main>
+
 
     <!-- ======================================================= -->
     <!-- MODULE 2: Hairfall Stage Determiner                    -->
@@ -1146,7 +1570,14 @@
         }
 
         const data = await response.json();
+
+        // Store latest comparison files and data for feedback submission
+        currentComparisonData = data;
+        currentLastImageFile = compressedLast;
+        currentTodayImageFile = compressedToday;
+
         renderCrownResults(data);
+
 
       } catch (err) {
         showGlobalError(err.message || 'An unexpected error occurred during comparison.');
@@ -1156,6 +1587,10 @@
         crownLoading.style.display = 'none';
       }
     });
+
+    let currentComparisonData = null;
+    let currentLastImageFile = null;
+    let currentTodayImageFile = null;
 
     function renderCrownResults(data) {
       const pChange = data.percentage_change || {};
@@ -1196,9 +1631,138 @@
         }
       }
 
+      // Reset feedback form state
+      const feedbackForm = document.getElementById('crownFeedbackForm');
+      if (feedbackForm) {
+        feedbackForm.reset();
+        feedbackForm.style.display = 'block';
+      }
+      const banner = document.getElementById('feedbackBanner');
+      if (banner) {
+        banner.style.display = 'none';
+        banner.className = 'feedback-status-banner';
+      }
+
       crownResults.style.display = 'block';
       crownResults.scrollIntoView({ behavior: 'smooth' });
     }
+
+    // -------------------------------------------------------
+    // Feedback Submission Handler
+    // -------------------------------------------------------
+    const crownFeedbackForm = document.getElementById('crownFeedbackForm');
+    const feedbackBanner = document.getElementById('feedbackBanner');
+    const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
+
+    crownFeedbackForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // 1. Yes / No selections
+      const qPrevMaskRadio = crownFeedbackForm.elements['q_prev_mask']?.value;
+      const qCurrMaskRadio = crownFeedbackForm.elements['q_curr_mask']?.value;
+      const qPrevClassRadio = crownFeedbackForm.elements['q_prev_class']?.value;
+      const qCurrClassRadio = crownFeedbackForm.elements['q_curr_class']?.value;
+      const qResultValidRadio = crownFeedbackForm.elements['q_result_valid']?.value;
+
+      // 2. Numerical percentage inputs (0 - 100)
+      const qPrevMaskPctStr = document.getElementById('q_prev_mask_pct')?.value.trim();
+      const qCurrMaskPctStr = document.getElementById('q_curr_mask_pct')?.value.trim();
+      const qPrevClassPctStr = document.getElementById('q_prev_class_pct')?.value.trim();
+      const qCurrClassPctStr = document.getElementById('q_curr_class_pct')?.value.trim();
+      const qResultValidPctStr = document.getElementById('q_result_valid_pct')?.value.trim();
+      const notes = document.getElementById('feedbackNotes').value;
+
+      if (!qPrevMaskRadio || !qCurrMaskRadio || !qPrevClassRadio || !qCurrClassRadio || !qResultValidRadio) {
+        alert('Please answer the Yes/No question for all 5 sections.');
+        return;
+      }
+
+      if (!qPrevMaskPctStr || !qCurrMaskPctStr || !qPrevClassPctStr || !qCurrClassPctStr || !qResultValidPctStr) {
+        alert('Please enter a percentage correctness value (0 to 100) for all 5 questions.');
+        return;
+      }
+
+      const qPrevMaskPct = parseFloat(qPrevMaskPctStr);
+      const qCurrMaskPct = parseFloat(qCurrMaskPctStr);
+      const qPrevClassPct = parseFloat(qPrevClassPctStr);
+      const qCurrClassPct = parseFloat(qCurrClassPctStr);
+      const qResultValidPct = parseFloat(qResultValidPctStr);
+
+      const isValidRange = (v) => !isNaN(v) && v >= 0 && v <= 100;
+      if (!isValidRange(qPrevMaskPct) || !isValidRange(qCurrMaskPct) || !isValidRange(qPrevClassPct) || !isValidRange(qCurrClassPct) || !isValidRange(qResultValidPct)) {
+        alert('Percentage values must be numerical digits between 0 and 100.');
+        return;
+      }
+
+      feedbackSubmitBtn.disabled = true;
+      feedbackSubmitBtn.innerHTML = '<span>Saving to Firebase...</span>';
+
+      try {
+        const formData = new FormData();
+        // Yes / No Booleans
+        formData.append('is_prev_masking_correct', qPrevMaskRadio === 'true');
+        formData.append('is_curr_masking_correct', qCurrMaskRadio === 'true');
+        formData.append('is_prev_classification_correct', qPrevClassRadio === 'true');
+        formData.append('is_curr_classification_correct', qCurrClassRadio === 'true');
+        formData.append('is_result_valid', qResultValidRadio === 'true');
+
+        // Percentages (0 - 100)
+        formData.append('prev_masking_pct', qPrevMaskPct);
+        formData.append('curr_masking_pct', qCurrMaskPct);
+        formData.append('prev_classification_pct', qPrevClassPct);
+        formData.append('curr_classification_pct', qCurrClassPct);
+        formData.append('overall_validity_pct', qResultValidPct);
+
+        formData.append('notes', notes);
+
+        if (currentComparisonData) {
+          formData.append('metrics', JSON.stringify({
+            previous_visit: currentComparisonData.previous_visit,
+            today_visit: currentComparisonData.today_visit,
+            percentage_change: currentComparisonData.percentage_change,
+          }));
+        }
+
+        if (currentLastImageFile) {
+          formData.append('last_visit_image', currentLastImageFile);
+        }
+        if (currentTodayImageFile) {
+          formData.append('today_visit_image', currentTodayImageFile);
+        }
+
+
+
+        const response = await fetch('/api/v1/feedback/crown', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const resData = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+          crownFeedbackForm.style.display = 'none';
+          feedbackBanner.className = 'feedback-status-banner success';
+          feedbackBanner.innerHTML = '<strong>✓ Thank you!</strong> Your feedback and comparison images have been saved to Firebase.';
+          feedbackBanner.style.display = 'block';
+        } else if (response.status === 503) {
+          // Firebase credentials pending setup
+          feedbackBanner.className = 'feedback-status-banner warning';
+          feedbackBanner.innerHTML = `<strong>⚠️ Firebase Pending Configuration:</strong> ${resData.detail || 'Credentials not found on server yet.'}`;
+          feedbackBanner.style.display = 'block';
+        } else {
+          throw new Error(resData.detail || 'Failed to submit feedback.');
+        }
+
+      } catch (err) {
+        feedbackBanner.className = 'feedback-status-banner warning';
+        feedbackBanner.innerHTML = `<strong>Notice:</strong> ${err.message}`;
+        feedbackBanner.style.display = 'block';
+      } finally {
+        feedbackSubmitBtn.disabled = false;
+        feedbackSubmitBtn.innerHTML = '<span>Submit Validation Feedback</span>';
+      }
+    });
+
 
     // -------------------------------------------------------
     // MODULE 2: Hairfall Stage Determiner Submission
