@@ -1,75 +1,21 @@
 """
 Hairfall Stage Determiner Core Service.
 
-Encapsulates Roboflow classification inference, clinical stage metadata mapping,
+Encapsulates local YOLOv8 Norwood Scale classification inference,
 per-request execution logging, and log management.
 """
 
-import base64
 from datetime import datetime
-import os
 from pathlib import Path
 import time
 from typing import Any, Dict, List, Optional
-import requests
+import cv2
+import numpy as np
+from ultralytics import YOLO
 
 from src.rootinly.config import settings
 from src.rootinly.logger import logger
 from src.rootinly.schemas.stage import StageResponse, StageLogsListResponse
-
-
-STAGE_METADATA = {
-    "level 1": {
-        "severity": "Minimal / Normal",
-        "description": "No significant hair loss or recession detected. Follicular density is within a healthy baseline.",
-        "recommendation": "Maintain regular scalp health routine and repeat check-up every 3 to 6 months for monitoring.",
-    },
-    "stage 1": {
-        "severity": "Minimal / Normal",
-        "description": "No significant hair loss or recession detected. Follicular density is within a healthy baseline.",
-        "recommendation": "Maintain regular scalp health routine and repeat check-up every 3 to 6 months for monitoring.",
-    },
-    "level 2": {
-        "severity": "Mild Thinning",
-        "description": "Mild anterior hairline maturation or early-stage thinning at the crown vertex.",
-        "recommendation": "Early preventative care advised: gentle scalp stimulation, nutrient enrichment, and quarterly follow-up.",
-    },
-    "stage 2": {
-        "severity": "Mild Thinning",
-        "description": "Mild anterior hairline maturation or early-stage thinning at the crown vertex.",
-        "recommendation": "Early preventative care advised: gentle scalp stimulation, nutrient enrichment, and quarterly follow-up.",
-    },
-    "level 3": {
-        "severity": "Moderate Thinning",
-        "description": "Noticeable crown vertex thinning and/or receding frontal hairline with active miniaturization.",
-        "recommendation": "Targeted clinical therapy recommended: DHT-blocking topical care, trichologist evaluation, and monthly tracking.",
-    },
-    "stage 3": {
-        "severity": "Moderate Thinning",
-        "description": "Noticeable crown vertex thinning and/or receding frontal hairline with active miniaturization.",
-        "recommendation": "Targeted clinical therapy recommended: DHT-blocking topical care, trichologist evaluation, and monthly tracking.",
-    },
-    "level 4": {
-        "severity": "Advanced Thinning",
-        "description": "Substantial follicular thinning across vertex and anterior zones with evident scalp exposure.",
-        "recommendation": "Comprehensive clinical protocol advised: advanced medical topical/oral therapies and bi-weekly photo comparisons.",
-    },
-    "stage 4": {
-        "severity": "Advanced Thinning",
-        "description": "Substantial follicular thinning across vertex and anterior zones with evident scalp exposure.",
-        "recommendation": "Comprehensive clinical protocol advised: advanced medical topical/oral therapies and bi-weekly photo comparisons.",
-    },
-    "level 5": {
-        "severity": "Severe Loss",
-        "description": "Extensive scalp visibility across crown and frontal zones with sparse remaining terminal hair.",
-        "recommendation": "Specialist trichology consultation recommended for intensive restorative protocols and clinical evaluation.",
-    },
-    "stage 5": {
-        "severity": "Severe Loss",
-        "description": "Extensive scalp visibility across crown and frontal zones with sparse remaining terminal hair.",
-        "recommendation": "Specialist trichology consultation recommended for intensive restorative protocols and clinical evaluation.",
-    },
-}
 
 
 class StageExecutionLogger:
@@ -114,6 +60,8 @@ class StageExecutionLogger:
             logger.warning(f"[StageDeterminer] {message}")
         elif level == "DEBUG":
             logger.debug(f"[StageDeterminer] {message}")
+        elif level == "SUCCESS":
+            logger.info(f"[StageDeterminer] [SUCCESS] {message}")
         else:
             logger.info(f"[StageDeterminer] {message}")
 
@@ -143,34 +91,48 @@ class StageExecutionLogger:
 class StageDeterminerService:
     """
     Service class managing Hairfall Stage Determination.
-    Queries Roboflow classification endpoint, handles timeouts and errors,
-    and enriches raw model output with clinical insights and structured logs.
+    Loads and runs local YOLOv8 Norwood Scale classification model ('best_norwood.pt'),
+    and provides structured execution logs.
     """
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model_id: Optional[str] = None,
-        api_url: Optional[str] = None,
-        timeout: Optional[float] = None,
+        model_path: Optional[Path] = None,
         logs_dir: Optional[Path] = None,
     ):
-        self.api_key = api_key or settings.ROBOFLOW_API_KEY
-        self.model_id = model_id or settings.ROBOFLOW_MODEL_ID
-        self.api_url = (api_url or settings.ROBOFLOW_API_URL).rstrip("/")
-        self.timeout = timeout or settings.ROBOFLOW_TIMEOUT_SECONDS
+        self.model_path = model_path or settings.get_stage_model_path()
         self.logs_dir = logs_dir or settings.STAGE_LOGS_DIR
         self.logs_dir.mkdir(parents=True, exist_ok=True)
+        self.model: Optional[YOLO] = None
+        self._load_model()
+
+    def _load_model(self) -> None:
+        """Loads the YOLO stage classification model into memory."""
+        try:
+            if not self.model_path.exists():
+                logger.warning(f"Stage model path '{self.model_path}' does not exist. Attempting fallback...")
+                if settings.FALLBACK_STAGE_MODEL_PATH.exists():
+                    self.model_path = settings.FALLBACK_STAGE_MODEL_PATH
+                else:
+                    raise FileNotFoundError(
+                        f"Stage classification weights not found at primary '{self.model_path}' or fallback '{settings.FALLBACK_STAGE_MODEL_PATH}'"
+                    )
+
+            self.model = YOLO(str(self.model_path))
+            logger.info(f"Successfully loaded YOLOv8 Norwood stage classification model from '{self.model_path}'.")
+        except Exception as e:
+            logger.error(f"Failed to load YOLO stage classification model: {e}")
+            self.model = None
+
+    @property
+    def is_loaded(self) -> bool:
+        """Checks if the YOLO stage classification model is loaded."""
+        return self.model is not None
 
     @property
     def is_configured(self) -> bool:
-        """Checks if all necessary Roboflow credentials are configured."""
-        return bool(self.api_key and self.model_id and self.api_url)
-
-    @property
-    def endpoint_url(self) -> str:
-        """Returns the full endpoint URL for inference."""
-        return f"{self.api_url}/{self.model_id}?api_key={self.api_key}"
+        """Backward-compatible readiness indicator."""
+        return self.is_loaded
 
     def predict(
         self,
@@ -179,8 +141,8 @@ class StageDeterminerService:
         content_type: str = "image/jpeg",
     ) -> StageResponse:
         """
-        Processes image bytes, queries Roboflow classification model,
-        and returns structured StageResponse with clinical metadata and execution logs.
+        Processes image bytes, runs local YOLOv8 Norwood classification inference,
+        and returns structured StageResponse with execution logs.
         """
         exec_logger = StageExecutionLogger(logs_dir=self.logs_dir)
         exec_logger.log(
@@ -192,69 +154,63 @@ class StageDeterminerService:
             raise ValueError("Uploaded file is empty.")
 
         exec_logger.log(
-            f"Image read successfully ({len(image_bytes)} bytes). Encoding to Base64..."
+            f"Image read successfully ({len(image_bytes)} bytes). Decoding image buffer..."
         )
-        img_b64 = base64.b64encode(image_bytes).decode("ascii")
 
-        exec_logger.log(
-            f"Dispatching inference request to Roboflow model '{self.model_id}' at '{self.api_url}'..."
-        )
+        if self.model is None:
+            exec_logger.log("YOLO Norwood stage classification model is not loaded.", level="ERROR")
+            raise RuntimeError("YOLO Norwood stage classification model is not loaded.")
+
+        # Decode image bytes to OpenCV BGR image
+        np_arr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+        if img is None:
+            exec_logger.log("Failed to decode image from uploaded bytes.", level="ERROR")
+            raise ValueError("Failed to decode image. Ensure valid JPG/PNG format.")
+
+        h, w = img.shape[:2]
+        exec_logger.log(f"Decoded image dimensions: {w}x{h} (channels: 3).")
+        exec_logger.log(f"Running inference using local YOLO model '{self.model_path.name}'...")
 
         try:
-            response = requests.post(
-                self.endpoint_url,
-                data=img_b64,
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                timeout=self.timeout,
+            results = self.model.predict(source=img, verbose=False)
+
+            if not results or results[0].probs is None:
+                raise RuntimeError("YOLO model returned empty classification output.")
+
+            probs = results[0].probs
+            top1_idx = int(probs.top1)
+            raw_class = str(self.model.names.get(top1_idx, top1_idx))
+            conf_val = float(probs.top1conf)
+            conf_pct = round(conf_val * 100, 2)
+
+            # Format stage name
+            if raw_class.isdigit():
+                stage_name = f"Stage {raw_class}"
+            elif not raw_class.lower().startswith("stage") and not raw_class.lower().startswith("level"):
+                stage_name = f"Stage {raw_class}"
+            else:
+                stage_name = raw_class
+
+            duration_ms = exec_logger.get_total_duration_ms()
+
+            exec_logger.log(
+                f"YOLO Norwood inference successful: Stage='{stage_name}' (Class ID: {raw_class}), Confidence={conf_pct}% (Duration: {duration_ms:.1f}ms)",
+                level="SUCCESS",
             )
 
-            if response.status_code == 200:
-                data = response.json()
-                raw_stage = data.get("top", "Level 1")
-                raw_conf = data.get("confidence", 0.0)
-                
-                # Confidence may be 0.0-1.0 or 0-100
-                conf_val = float(raw_conf)
-                if conf_val <= 1.0:
-                    conf_pct = round(conf_val * 100, 2)
-                else:
-                    conf_pct = round(conf_val, 2)
+            return StageResponse(
+                status="success",
+                stage=stage_name,
+                confidence=conf_pct,
+                duration_ms=duration_ms,
+                duration_formatted=f"{duration_ms:.1f} ms",
+                log_file=exec_logger.get_log_filepath(),
+                logs=exec_logger.get_logs(),
+            )
 
-                duration_ms = exec_logger.get_total_duration_ms()
-                stage_key = str(raw_stage).strip().lower()
-                meta = STAGE_METADATA.get(stage_key, {
-                    "severity": "Clinical Assessment Required",
-                    "description": f"Classified as {raw_stage}. Follicular pattern identified.",
-                    "recommendation": "Review with clinical specialist and track changes over time.",
-                })
-
-                exec_logger.log(
-                    f"Roboflow inference successful: Stage='{raw_stage}', Confidence={conf_pct}% (Duration: {duration_ms:.1f}ms)",
-                    level="SUCCESS",
-                )
-
-                return StageResponse(
-                    status="success",
-                    stage=str(raw_stage),
-                    confidence=conf_pct,
-                    duration_ms=duration_ms,
-                    duration_formatted=f"{duration_ms:.1f} ms",
-                    log_file=exec_logger.get_log_filepath(),
-                    logs=exec_logger.get_logs(),
-                    severity=meta["severity"],
-                    description=meta["description"],
-                    recommendation=meta["recommendation"],
-                )
-            else:
-                err_msg = f"Roboflow API error (HTTP {response.status_code}): {response.text}"
-                exec_logger.log(err_msg, level="ERROR")
-                raise RuntimeError(err_msg)
-
-        except requests.Timeout as e:
-            err_msg = f"Roboflow inference request timed out after {self.timeout}s."
-            exec_logger.log(err_msg, level="ERROR")
-            raise TimeoutError(err_msg) from e
-        except (ValueError, RuntimeError, TimeoutError):
+        except (ValueError, RuntimeError):
             raise
         except Exception as e:
             err_msg = f"Unhandled error during stage prediction: {str(e)}"

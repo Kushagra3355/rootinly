@@ -23,15 +23,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("[Module 1: Crown Comparison] YOLOv8 weights not found or failed to load.")
 
-    # 2. Verify Roboflow configuration for Module 2 (Hairfall Stage Determiner)
+    # 2. Pre-load YOLO Norwood classification model for Module 2 (Hairfall Stage Determiner)
     stage_service = get_stage_determiner()
-    if stage_service.is_configured:
+    if stage_service.is_loaded:
         logger.info(
-            f"[Module 2: Stage Determiner] Roboflow Classifier configured: "
-            f"model='{stage_service.model_id}' at '{stage_service.api_url}'"
+            f"[Module 2: Stage Determiner] YOLOv8 Norwood Classifier loaded from: {stage_service.model_path}"
         )
     else:
-        logger.warning("[Module 2: Stage Determiner] Roboflow environment variables incomplete.")
+        logger.warning("[Module 2: Stage Determiner] YOLOv8 Norwood Stage model weights not found or failed to load.")
 
     logger.info("Serving 2 Modules: (1) Crown Comparison, (2) Hairfall Stage Determiner")
     logger.info("=======================================================")
@@ -40,12 +39,32 @@ async def lifespan(app: FastAPI):
     
     logger.info("Shutting down Rootinly API server...")
 
+TAGS_METADATA = [
+    {
+        "name": "Web",
+        "description": "Single-page web application interface delivery.",
+    },
+    {
+        "name": "Crown Hair Comparison",
+        "description": "Module 1: Crown view hair density and scalp comparison engine with health checks.",
+    },
+    {
+        "name": "Hairfall Stage Determiner",
+        "description": "Module 2: Scalp photograph Norwood hairfall stage classification with health checks.",
+    },
+    {
+        "name": "Health & System",
+        "description": "Unified system health checks and model inspection.",
+    },
+]
+
 def create_app() -> FastAPI:
     """Creates and configures a production-ready FastAPI application serving both modules."""
     app = FastAPI(
         title=settings.APP_NAME,
         description=settings.APP_DESCRIPTION,
         version=settings.APP_VERSION,
+        openapi_tags=TAGS_METADATA,
         lifespan=lifespan,
         docs_url="/docs",
         redoc_url="/redoc",

@@ -1,14 +1,15 @@
-﻿"""Crown hair comparison and frontend routes."""
+"""Crown hair comparison and frontend routes."""
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
-from src.rootinly.api.dependencies import get_pipeline
+from src.rootinly.api.dependencies import get_pipeline, get_segmentor
 from src.rootinly.config import settings
 from src.rootinly.core.pipeline import CrownComparisonPipeline
+from src.rootinly.core.segmentor import CrownSegmentor
 from src.rootinly.schemas.response import ComparisonResponse, ErrorResponse
 
-router = APIRouter(tags=["Crown Hair Comparison"])
+router = APIRouter()
 
-@router.get("/", summary="Serve Web Interface")
+@router.get("/", tags=["Web"], summary="Serve Web Interface")
 async def serve_frontend():
     """Serves the single-page web UI for image comparison."""
     index_file = settings.get_index_html_path()
@@ -23,6 +24,7 @@ async def serve_frontend():
     "/compare-crowns",
     response_model=ComparisonResponse,
     responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    tags=["Crown Hair Comparison"],
     summary="Compare Baseline and Follow-up Crown Photos",
 )
 async def compare_crown_photos(
@@ -54,3 +56,27 @@ async def compare_crown_photos(
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Comparison processing failed: {str(e)}")
+
+
+@router.get(
+    "/api/v1/crown/health",
+    tags=["Crown Hair Comparison"],
+    summary="Crown Comparison Health Check",
+)
+@router.get(
+    "/api/v1/comparison/health",
+    tags=["Crown Hair Comparison"],
+    summary="Crown Comparison Health Check (Alias)",
+    include_in_schema=False,
+)
+async def crown_health(
+    segmentor: CrownSegmentor = Depends(get_segmentor),
+):
+    """Checks YOLO crown segmentation model readiness and configuration."""
+    return {
+        "status": "healthy" if segmentor.is_loaded else "unconfigured",
+        "service": "YOLOv8 Crown Segmentation",
+        "configured": segmentor.is_loaded,
+        "model_loaded": segmentor.is_loaded,
+        "model_path": str(segmentor.model_path),
+    }

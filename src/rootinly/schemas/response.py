@@ -25,9 +25,11 @@ class HealthResponse(BaseModel):
     status: str = Field("healthy", description="Health status of the service")
     app_name: str = Field(..., description="Application name")
     version: str = Field(..., description="Application version")
-    model_loaded: bool = Field(..., description="Indicates if YOLO model is loaded into memory")
-    model_path: str = Field(..., description="Path to active model weights file")
-    roboflow_configured: bool = Field(True, description="Indicates if Roboflow stage classification is configured")
+    model_loaded: bool = Field(..., description="Indicates if YOLO crown segmentation model is loaded into memory")
+    model_path: str = Field(..., description="Path to active segmentation model weights file")
+    stage_model_loaded: bool = Field(True, description="Indicates if YOLO Norwood stage classification model is loaded")
+    stage_model_path: Optional[str] = Field(None, description="Path to active stage model weights file")
+    roboflow_configured: Optional[bool] = Field(None, description="Legacy indicator for stage determiner readiness")
     active_modules: List[str] = Field(
         default_factory=lambda: ["crown_comparison", "stage_determiner"],
         description="List of active API modules served",
