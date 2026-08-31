@@ -32,8 +32,9 @@ ENV HOST=0.0.0.0 \
 
 EXPOSE 5000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:5000/api/v1/health || exit 1
+# Health check (supports dynamic PORT injected by Railway)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD sh -c "curl -f http://localhost:\${PORT:-5000}/api/v1/health || exit 1"
 
 CMD ["python", "main.py", "--no-browser"]
+
