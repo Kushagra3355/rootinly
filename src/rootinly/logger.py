@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import time
 from datetime import datetime
 from pathlib import Path
@@ -23,7 +23,7 @@ class ExecutionLogger:
     and returns them structured for API responses.
     """
     def __init__(self, logs_dir: Optional[Path] = None):
-        self.logs_dir = logs_dir or settings.LOGS_DIR
+        self.logs_dir = logs_dir or settings.GROWTH_COMP_LOGS_DIR
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.logs: List[Dict[str, str]] = []
         self.start_time = time.perf_counter()
@@ -61,8 +61,12 @@ class ExecutionLogger:
         return self.logs
 
     def get_log_filepath(self) -> str:
-        """Returns the relative path to the log file."""
-        return f"logs/{self.log_filename}"
+        """Returns the relative path to the log file within logs/growth_comparison."""
+        try:
+            rel_path = self.log_file_path.relative_to(settings.BASE_DIR)
+            return str(rel_path).replace("\\", "/")
+        except Exception:
+            return f"logs/growth_comparison/{self.log_filename}"
 
     def get_total_duration_ms(self) -> float:
         """Calculates elapsed time in milliseconds."""

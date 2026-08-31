@@ -76,12 +76,12 @@ class StageExecutionLogger:
         return self.logs
 
     def get_log_filepath(self) -> str:
-        """Returns relative path to the log file within stage_determiner/logs."""
+        """Returns relative path to the log file within logs/stage_determiner."""
         try:
             rel_path = self.log_file_path.relative_to(settings.BASE_DIR)
             return str(rel_path).replace("\\", "/")
         except Exception:
-            return f"stage_determiner/logs/{self.log_filename}"
+            return f"logs/stage_determiner/{self.log_filename}"
 
     def get_total_duration_ms(self) -> float:
         """Calculates elapsed time in milliseconds."""

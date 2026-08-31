@@ -34,8 +34,15 @@ class Settings:
     LOGS_DIR: Path = field(
         default_factory=lambda: Path(os.getenv("LOGS_DIR", str(BASE_DIR / "logs")))
     )
+    GROWTH_COMP_LOGS_DIR: Path = field(
+        default_factory=lambda: Path(
+            os.getenv("GROWTH_COMP_LOGS_DIR", str(BASE_DIR / "logs" / "growth_comparison"))
+        )
+    )
     STAGE_LOGS_DIR: Path = field(
-        default_factory=lambda: Path(os.getenv("STAGE_LOGS_DIR", str(BASE_DIR / "stage_determiner" / "logs")))
+        default_factory=lambda: Path(
+            os.getenv("STAGE_LOGS_DIR", str(BASE_DIR / "logs" / "stage_determiner"))
+        )
     )
 
     # CORS

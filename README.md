@@ -216,7 +216,7 @@ FastAPI provides automated interactive API documentation:
   "confidence": 94.2,
   "duration_ms": 138.4,
   "duration_formatted": "138.4 ms",
-  "log_file": "stage_determiner/logs/stage_predict_2026-08-26_19-46-55.log",
+  "log_file": "logs/stage_determiner/stage_predict_2026-08-26_19-46-55.log",
   "logs": [ ... ]
 }
 ```
@@ -230,8 +230,8 @@ FastAPI provides automated interactive API documentation:
 
 ## Logging Architecture
 
-- **Crown Comparison Logs**: Written to [`logs/`](logs/) (e.g., `logs/2026-08-26_19-46-55.log`).
-- **Stage Determiner Logs**: Written to [`stage_determiner/logs/`](stage_determiner/logs/) (e.g., `stage_determiner/logs/stage_predict_2026-08-26_19-46-55.log`).
+- **Growth Comparison Logs**: Written to [`logs/growth_comparison/`](logs/growth_comparison/) (e.g., `logs/growth_comparison/2026-08-26_19-46-55.log`).
+- **Stage Determiner Logs**: Written to [`logs/stage_determiner/`](logs/stage_determiner/) (e.g., `logs/stage_determiner/stage_predict_2026-08-26_19-46-55.log`).
 
 ---
 

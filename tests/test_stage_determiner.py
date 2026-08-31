@@ -25,10 +25,10 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         cls.client = TestClient(app)
 
     def test_logs_directory_isolated(self):
-        """Verify that logs directory is strictly located inside stage_determiner/logs."""
+        """Verify that logs directory is strictly located inside logs/stage_determiner."""
         self.assertTrue(LOGS_DIR.exists())
-        self.assertEqual(LOGS_DIR.parent.name, "stage_determiner")
-        self.assertEqual(LOGS_DIR.name, "logs")
+        self.assertEqual(LOGS_DIR.parent.name, "logs")
+        self.assertEqual(LOGS_DIR.name, "stage_determiner")
 
     def test_serve_frontend(self):
         """Test GET / serves the clean HTML interface without frontend execution logs."""
@@ -47,7 +47,7 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         data = response.json()
         self.assertEqual(data.get("status"), "healthy")
         self.assertIn("logs_directory", data)
-        self.assertTrue(data["logs_directory"].endswith(str(Path("stage_determiner/logs"))))
+        self.assertTrue(data["logs_directory"].endswith(str(Path("logs/stage_determiner"))))
 
 
     def test_empty_file_upload(self):
@@ -85,9 +85,9 @@ class TestHairfallStageDeterminer(unittest.TestCase):
 
         # Check log file path
         self.assertIn("log_file", data)
-        self.assertTrue(data["log_file"].startswith("stage_determiner/logs/"))
+        self.assertTrue(data["log_file"].startswith("logs/stage_determiner/"))
 
-        # Verify the actual file was created in stage_determiner/logs
+        # Verify the actual file was created in logs/stage_determiner
         log_filename = Path(data["log_file"]).name
         created_log_path = LOGS_DIR / log_filename
         self.assertTrue(created_log_path.exists())
@@ -123,7 +123,7 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertGreaterEqual(duration, 0.0)
 
         filepath = exec_logger.get_log_filepath()
-        self.assertTrue(filepath.startswith("stage_determiner/logs/"))
+        self.assertTrue(filepath.startswith("logs/stage_determiner/"))
 
         actual_file = LOGS_DIR / Path(filepath).name
         self.assertTrue(actual_file.exists())
