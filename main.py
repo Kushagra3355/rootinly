@@ -30,15 +30,15 @@ def main():
     parser.add_argument("--port", type=int, default=settings.PORT, help="Bind port (default: 5000)")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
     parser.add_argument("--no-browser", action="store_true", help="Do not automatically open the browser")
-    parser.add_argument("--model-path", type=str, default=None, help="Custom YOLO model weights path")
-    parser.add_argument("--roboflow-key", type=str, default=None, help="Custom Roboflow API key")
+    parser.add_argument("--model-path", type=str, default=None, help="Custom YOLO segmentation model weights path")
+    parser.add_argument("--stage-model-path", type=str, default=None, help="Custom YOLO Norwood stage model weights path")
 
     args = parser.parse_args()
 
     if args.model_path:
         settings.MODEL_PATH = Path(args.model_path)
-    if args.roboflow_key:
-        settings.ROBOFLOW_API_KEY = args.roboflow_key
+    if args.stage_model_path:
+        settings.STAGE_MODEL_PATH = Path(args.stage_model_path)
 
     server_url = f"http://localhost:{args.port}"
 
