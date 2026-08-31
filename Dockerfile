@@ -1,4 +1,4 @@
-﻿# Multi-stage production Dockerfile
+# Multi-stage production Dockerfile
 FROM python:3.11-slim
 
 # System dependencies for OpenCV & YOLO
@@ -27,7 +27,8 @@ COPY main.py .
 ENV HOST=0.0.0.0 \
     PORT=5000 \
     PYTHONUNBUFFERED=1 \
-    MODEL_PATH=/app/models/best.pt
+    MODEL_PATH=/app/models/best.pt \
+    STAGE_MODEL_PATH=/app/models/best_norwood.pt
 
 EXPOSE 5000
 

@@ -3,7 +3,7 @@
 A modular, production-ready Computer Vision and Machine Learning platform that unifies two clinical scalp analysis engines into a single FastAPI service and web interface:
 
 1. **Crown View Hair Comparison**: Calculates exact follicular hair density and scalp visibility changes across clinical visits using Custom YOLOv8 Instance Segmentation and HSV colorimetry.
-2. **Hairfall Stage Determiner**: Classifies clinical hairfall progression stage (Level 1–5) and model confidence score from scalp photographs using Roboflow API integration.
+2. **Hairfall Stage Determiner**: Classifies clinical hairfall progression stage (Norwood Scale Stages 1–7) and model confidence score from scalp photographs using the local YOLOv8 Norwood Classification model (`models/best_norwood.pt`).
 
 Both modules are served simultaneously from a single server entrypoint: `python main.py`.
 
@@ -17,13 +17,14 @@ rootinly/
 │   ├── __init__.py
 │   └── settings.py           # Typed settings dataclass with .env support
 │
-├── data/                     # Dataset (Train, Test, Valid & Roboflow annotations)
+├── data/                     # Dataset (Train, Test, Valid annotations)
 │   ├── train/
 │   ├── test/
 │   └── data.yaml
 │
 ├── models/                   # Model weight checkpoints
-│   └── best.pt               # Custom trained YOLOv8 Segmentation weights
+│   ├── best.pt               # Custom trained YOLOv8 Segmentation weights (Module 1)
+│   └── best_norwood.pt       # Custom trained YOLOv8 Norwood Classification weights (Module 2)
 │
 ├── src/                      # Production source package
 │   └── rootinly/
@@ -41,7 +42,7 @@ rootinly/
 │       │   ├── segmentor.py       # YOLOv8 crown/hairline segmentation
 │       │   ├── analyzer.py        # HSV scalp filtering & density calculation
 │       │   ├── pipeline.py        # Crown comparison orchestration
-│       │   └── stage_determiner.py# Roboflow stage inference service & logging
+│       │   └── stage_determiner.py# Local YOLOv8 Norwood classification service & logging
 │       └── api/              # FastAPI Application layer
 │           ├── __init__.py
 │           ├── app.py        # Unified FastAPI factory & lifespan setup
@@ -49,8 +50,8 @@ rootinly/
 │           └── routes/       # Modular API route controllers
 │               ├── __init__.py
 │               ├── health.py # /api/v1/health & system readiness
-│               ├── comparison.py # /compare-crowns & frontend delivery
-│               └── stage.py  # /predict-stage & /api/v1/stage/logs
+│               ├── comparison.py # /compare-crowns, /api/v1/crown/health & web UI
+│               └── stage.py  # /predict-stage & /api/v1/stage/health
 │
 ├── stage_determiner/         # Stage determiner storage
 │   └── logs/                 # Dedicated stage prediction execution logs
@@ -150,7 +151,8 @@ FastAPI provides automated interactive API documentation:
   "version": "2.0.0",
   "model_loaded": true,
   "model_path": "models/best.pt",
-  "roboflow_configured": true,
+  "stage_model_loaded": true,
+  "stage_model_path": "models/best_norwood.pt",
   "active_modules": ["crown_comparison", "stage_determiner"],
   "timestamp": "2026-08-26T19:46:55.123456"
 }
@@ -210,7 +212,7 @@ FastAPI provides automated interactive API documentation:
 ```json
 {
   "status": "success",
-  "stage": "Level 2",
+  "stage": "Stage 2",
   "confidence": 94.2,
   "duration_ms": 138.4,
   "duration_formatted": "138.4 ms",
@@ -219,9 +221,10 @@ FastAPI provides automated interactive API documentation:
 }
 ```
 
-#### 4. Stage Logs & Health
-- `GET /api/v1/stage/logs`: List available stage prediction log files.
-- `GET /api/v1/stage/health`: Inspect Roboflow classifier service status and log directory path.
+#### 4. Module Health Checks
+- `GET /api/v1/crown/health`: Inspect YOLO crown segmentation module status and active model path.
+- `GET /api/v1/stage/health`: Inspect YOLO Norwood stage classification module status and active model path.
+- `GET /api/v1/health`: Overall system health and readiness across all modules.
 
 ---
 
