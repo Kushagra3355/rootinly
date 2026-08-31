@@ -1,4 +1,4 @@
-﻿"""End-to-end Crown Comparison pipeline orchestration."""
+"""End-to-end Crown Comparison pipeline orchestration."""
 from datetime import datetime
 from typing import Optional
 from src.rootinly.core.analyzer import CrownAnalyzer
@@ -56,8 +56,12 @@ class CrownComparisonPipeline:
         exec_logger.log(f"Aligned images to resolution {w_ref}x{h_ref}")
 
         # 3. AI Segmentation Mask Extraction
-        mask_last = self.segmentor.extract_mask(img_last)
-        mask_today = self.segmentor.extract_mask(img_today)
+        try:
+            mask_last = self.segmentor.extract_mask(img_last)
+            mask_today = self.segmentor.extract_mask(img_today)
+        except ValueError as ve:
+            exec_logger.log(f"Head segmentation failed: {str(ve)}", level="ERROR")
+            raise ValueError(str(ve)) from ve
 
         # 4. Follicular Metrics & Overlays
         metrics_last, overlay_last = self.analyzer.calculate_metrics_and_overlay(img_last, mask_last)

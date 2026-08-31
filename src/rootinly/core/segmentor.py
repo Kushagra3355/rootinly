@@ -1,4 +1,4 @@
-﻿"""YOLOv8 Segmentation module for crown/head contour extraction."""
+"""YOLOv8 Segmentation module for crown/head contour extraction."""
 from pathlib import Path
 from typing import Optional
 import cv2
@@ -50,19 +50,21 @@ class CrownSegmentor:
             
         Returns:
             np.ndarray: Binary mask of shape (H, W) where 1 = Crown ROI, 0 = Background.
+
+        Raises:
+            RuntimeError: If YOLO segmentation model is not loaded.
+            ValueError: If no head is detected in the image.
         """
         h, w = image.shape[:2]
-        binary_mask = np.zeros((h, w), dtype=np.uint8)
 
         if self.model is None:
-            logger.warning("YOLO model not loaded; using fallback entire-image mask.")
-            binary_mask[:, :] = 1
-            return binary_mask
+            logger.error("YOLO segmentation model is not loaded.")
+            raise RuntimeError("YOLO segmentation model is not loaded.")
 
         conf_thresh = conf if conf is not None else self.confidence
         results = self.model.predict(source=image, conf=conf_thresh, verbose=False)
 
-        if len(results) > 0 and results[0].masks is not None:
+        if len(results) > 0 and results[0].masks is not None and len(results[0].masks.data) > 0:
             # Extract raw mask data tensor for the primary detected head segment
             mask_data = results[0].masks.data[0].cpu().numpy()
             
@@ -71,9 +73,12 @@ class CrownSegmentor:
             
             # Convert probabilities to binary mask (1 for crown/hair, 0 for background)
             binary_mask = (mask_resized > 0.5).astype(np.uint8)
-        else:
-            # Fallback if no head detected
-            logger.warning("No head mask detected by YOLO; falling back to full-image mask.")
-            binary_mask[:, :] = 1
 
-        return binary_mask
+            if int(np.sum(binary_mask)) == 0:
+                logger.warning("No head mask detected by YOLO.")
+                raise ValueError("No head detected")
+
+            return binary_mask
+        else:
+            logger.warning("No head mask detected by YOLO.")
+            raise ValueError("No head detected")
