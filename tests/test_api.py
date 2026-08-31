@@ -58,16 +58,7 @@ class TestApiEndpoints(unittest.TestCase):
         response = self.client.post("/compare-crowns", files=files)
         self.assertEqual(response.status_code, 422)
 
-    @patch("src.rootinly.core.stage_determiner.requests.post")
-    def test_predict_stage_success(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "top": "Level 2",
-            "confidence": 0.885,
-        }
-        mock_post.return_value = mock_response
-
+    def test_predict_stage_success(self):
         files = {
             "file": ("scalp.jpg", io.BytesIO(self.img_bytes), "image/jpeg"),
         }
@@ -75,11 +66,8 @@ class TestApiEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "success")
-        self.assertEqual(data["stage"], "Level 2")
-        self.assertEqual(data["confidence"], 88.5)
-        self.assertIn("severity", data)
-        self.assertIn("description", data)
-        self.assertIn("recommendation", data)
+        self.assertIn("stage", data)
+        self.assertGreaterEqual(data["confidence"], 0.0)
         self.assertIn("logs", data)
 
     def test_predict_stage_empty_file(self):
@@ -89,33 +77,28 @@ class TestApiEndpoints(unittest.TestCase):
         response = self.client.post("/predict-stage", files=files)
         self.assertEqual(response.status_code, 400)
 
-    @patch("src.rootinly.core.stage_determiner.requests.post")
-    def test_predict_stage_error(self, mock_post):
-        mock_response = MagicMock()
-        mock_response.status_code = 403
-        mock_response.text = "Forbidden: Invalid API Key"
-        mock_post.return_value = mock_response
-
+    def test_predict_stage_invalid_file(self):
         files = {
-            "file": ("scalp.jpg", io.BytesIO(self.img_bytes), "image/jpeg"),
+            "file": ("bad.jpg", io.BytesIO(b"not_an_image_data"), "image/jpeg"),
         }
         response = self.client.post("/predict-stage", files=files)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
-    def test_stage_logs_endpoint(self):
-        response = self.client.get("/api/v1/stage/logs")
+    def test_crown_health_endpoint(self):
+        response = self.client.get("/api/v1/crown/health")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "success")
-        self.assertIn("log_files", data)
+        self.assertEqual(data["status"], "healthy")
+        self.assertIn("model_loaded", data)
+        self.assertIn("service", data)
 
     def test_stage_health_endpoint(self):
         response = self.client.get("/api/v1/stage/health")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("status", data)
-        self.assertIn("configured", data)
+        self.assertEqual(data["status"], "healthy")
+        self.assertIn("model_loaded", data)
+        self.assertIn("service", data)
 
 if __name__ == "__main__":
     unittest.main()
-

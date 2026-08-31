@@ -46,11 +46,11 @@ class Settings:
     # YOLO Segmentation Parameters
     YOLO_CONFIDENCE: float = float(os.getenv("YOLO_CONFIDENCE", "0.5"))
 
-    # Roboflow Stage Classification Parameters
-    ROBOFLOW_API_KEY: str = os.getenv("ROBOFLOW_API_KEY", "05j2AaNi6KvZ8ieRDR6e")
-    ROBOFLOW_MODEL_ID: str = os.getenv("ROBOFLOW_MODEL_ID", "hyehye2/1")
-    ROBOFLOW_API_URL: str = os.getenv("ROBOFLOW_API_URL", "https://detect.roboflow.com")
-    ROBOFLOW_TIMEOUT_SECONDS: float = float(os.getenv("ROBOFLOW_TIMEOUT_SECONDS", "15.0"))
+    # YOLO Stage Classification Parameters (Norwood Scale)
+    STAGE_MODEL_PATH: Path = field(
+        default_factory=lambda: Path(os.getenv("STAGE_MODEL_PATH", str(BASE_DIR / "models" / "best_norwood.pt")))
+    )
+    FALLBACK_STAGE_MODEL_PATH: Path = BASE_DIR / "best_norwood.pt"
 
     # HSV Scalp/Skin Detection Thresholds
     LOWER_SKIN_HSV: Tuple[int, int, int] = (0, 10, 60)
@@ -64,8 +64,12 @@ class Settings:
     OVERLAY_BETA: float = 0.55
 
     def get_active_model_path(self) -> Path:
-        """Returns the active model weight path."""
+        """Returns the active segmentation model weight path."""
         return self.MODEL_PATH
+
+    def get_stage_model_path(self) -> Path:
+        """Returns the stage classification model weight path."""
+        return self.STAGE_MODEL_PATH
 
     def get_index_html_path(self) -> Path:
         """Returns the index.html path from static directory."""

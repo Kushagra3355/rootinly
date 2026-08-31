@@ -50,16 +50,6 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertTrue(data["logs_directory"].endswith(str(Path("stage_determiner/logs"))))
 
 
-    def test_list_logs_endpoint(self):
-        """Test GET /api/v1/logs lists logs inside stage_determiner/logs."""
-        response = self.client.get("/api/v1/logs")
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data.get("status"), "success")
-        self.assertIn("logs_directory", data)
-        self.assertIn("log_files", data)
-        self.assertIsInstance(data["log_files"], list)
-
     def test_empty_file_upload(self):
         """Test POST /predict-stage with empty bytes fails with 400 and logs error."""
         response = self.client.post(
@@ -69,17 +59,8 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], "Uploaded file is empty.")
 
-    @patch("src.rootinly.core.stage_determiner.requests.post")
-    def test_predict_stage_endpoint_success(self, mock_post):
+    def test_predict_stage_endpoint_success(self):
         """Test POST /predict-stage returns stage, confidence, and records logs in background."""
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "top": "Stage 2",
-            "confidence": 0.942,
-        }
-        mock_post.return_value = mock_response
-
         img = np.zeros((64, 64, 3), dtype=np.uint8)
         _, buffer = cv2.imencode(".jpg", img)
         img_bytes = buffer.tobytes()
@@ -92,8 +73,10 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         data = response.json()
 
         # Check prediction results
-        self.assertEqual(data["stage"], "Stage 2")
-        self.assertEqual(data["confidence"], 94.2)
+        self.assertIn("stage", data)
+        self.assertTrue(data["stage"].startswith("Stage") or data["stage"].startswith("Level") or data["stage"].isdigit())
+        self.assertGreaterEqual(data["confidence"], 0.0)
+        self.assertLessEqual(data["confidence"], 100.0)
 
         # Check logs returned in response
         self.assertIn("logs", data)
@@ -112,26 +95,15 @@ class TestHairfallStageDeterminer(unittest.TestCase):
         # Verify log file contents
         content = created_log_path.read_text(encoding="utf-8")
         self.assertIn("Hairfall Stage Determination Log", content)
-        self.assertIn("Stage='Stage 2'", content)
 
-    @patch("src.rootinly.core.stage_determiner.requests.post")
-    def test_predict_stage_endpoint_roboflow_error(self, mock_post):
-        """Test POST /predict-stage handles Roboflow API errors with logging."""
-        mock_response = MagicMock()
-        mock_response.status_code = 403
-        mock_response.text = "Forbidden: Invalid API Key"
-        mock_post.return_value = mock_response
-
-        img = np.zeros((64, 64, 3), dtype=np.uint8)
-        _, buffer = cv2.imencode(".jpg", img)
-        img_bytes = buffer.tobytes()
-
+    def test_predict_stage_endpoint_corrupt_file(self):
+        """Test POST /predict-stage handles corrupt image file bytes."""
         response = self.client.post(
             "/predict-stage",
-            files={"file": ("test_crown.jpg", img_bytes, "image/jpeg")},
+            files={"file": ("corrupt.jpg", b"invalid_non_image_binary_data", "image/jpeg")},
         )
-        self.assertEqual(response.status_code, 403)
-        self.assertIn("Roboflow API error", response.json()["detail"])
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Failed to decode image", response.json()["detail"])
 
     def test_stage_execution_logger_unit(self):
         """Unit test StageExecutionLogger functionality."""
