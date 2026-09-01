@@ -1,18 +1,1 @@
-
-from inference_sdk import InferenceHTTPClient
-
-CLIENT = InferenceHTTPClient(
-    api_url="https://serverless.roboflow.com",
-    api_key="05j2AaNi6KvZ8ieRDR6e"
-)
-
-result = CLIENT.infer("YOUR_IMAGE.jpg", model_id="hyehye2/1")
-
-
-
-https://universe.roboflow.com/uze/hyehye2
-
-https://universe.roboflow.com/trackheyr/myhair
-
-https://universe.roboflow.com/trackheyr/my-first-project-ycy28
-
+null
