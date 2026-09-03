@@ -1602,6 +1602,82 @@
       </footer>
     </div>
 
+    <!-- Guided Camera Capture Modal -->
+    <div id="cameraModal" class="cam-modal" style="display: none;">
+      <div class="cam-modal-header">
+        <div class="cam-modal-title-box">
+          <span class="cam-modal-badge" id="camTargetBadge">Crown Capture</span>
+          <div class="cam-modal-title" id="camModalTitle">Guided Scalp Capture</div>
+        </div>
+        <button
+          type="button"
+          class="cam-modal-close"
+          onclick="closeCameraCapture()"
+          aria-label="Close Camera"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="cam-viewport">
+        <video id="camVideo" autoplay playsinline muted></video>
+        <canvas id="camHiddenCanvas" style="display: none;"></canvas>
+        <img id="camResultImg" alt="Captured Scalp Photo" style="display: none;" />
+
+        <div class="cam-overlay" id="camOverlay">
+          <div class="cam-guidance-box">
+            <div id="camInstruction">Crown Capture</div>
+            <div id="camSubInstruction">Initializing camera...</div>
+          </div>
+          <div class="cam-reticle" id="camReticle"></div>
+        </div>
+
+        <div id="camFlashOverlay"></div>
+        <div id="camDebugStatus">Waiting for camera...</div>
+      </div>
+
+      <div class="cam-controls">
+        <div id="camLiveControls" class="cam-controls-group">
+          <button
+            type="button"
+            id="camStartBtn"
+            class="cam-btn cam-btn-primary"
+            style="display: none;"
+          >
+            Start Camera
+          </button>
+          <button
+            type="button"
+            id="camShutterBtn"
+            class="cam-shutter-btn"
+            disabled
+            aria-label="Capture Shutter"
+          ></button>
+          <button
+            type="button"
+            id="camSwitchLensBtn"
+            class="cam-btn cam-btn-secondary"
+            style="display: none;"
+          >
+            🔄 Switch Lens
+          </button>
+        </div>
+
+        <div
+          id="camReviewControls"
+          class="cam-controls-group"
+          style="display: none;"
+        >
+          <button type="button" id="camRetakeBtn" class="cam-btn cam-btn-secondary">
+            Retake Photo
+          </button>
+          <button type="button" id="camUsePhotoBtn" class="cam-btn cam-btn-success">
+            Use This Photo ✓
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
       // Module Navigation
       function switchModule(moduleName) {
@@ -2053,27 +2129,56 @@
       const MIN_LUMA = 85; // Distance check: min brightness with torch
       const MAX_LUMA = 180; // Distance check: max brightness with torch
 
-      const camModal = document.getElementById("cameraModal");
-      const camVideo = document.getElementById("camVideo");
-      const camHiddenCanvas = document.getElementById("camHiddenCanvas");
-      const camResultImg = document.getElementById("camResultImg");
-      const camInstruction = document.getElementById("camInstruction");
-      const camSubInstruction = document.getElementById("camSubInstruction");
-      const camReticle = document.getElementById("camReticle");
-      const camFlashOverlay = document.getElementById("camFlashOverlay");
-      const camDebugStatus = document.getElementById("camDebugStatus");
-      const camLiveControls = document.getElementById("camLiveControls");
-      const camReviewControls = document.getElementById("camReviewControls");
-      const camStartBtn = document.getElementById("camStartBtn");
-      const camShutterBtn = document.getElementById("camShutterBtn");
-      const camSwitchLensBtn = document.getElementById("camSwitchLensBtn");
-      const camRetakeBtn = document.getElementById("camRetakeBtn");
-      const camUsePhotoBtn = document.getElementById("camUsePhotoBtn");
-      const camTargetBadge = document.getElementById("camTargetBadge");
-      const camModalTitle = document.getElementById("camModalTitle");
+      let camModal,
+        camVideo,
+        camHiddenCanvas,
+        camResultImg,
+        camInstruction,
+        camSubInstruction,
+        camReticle,
+        camFlashOverlay,
+        camDebugStatus,
+        camLiveControls,
+        camReviewControls,
+        camStartBtn,
+        camShutterBtn,
+        camSwitchLensBtn,
+        camRetakeBtn,
+        camUsePhotoBtn,
+        camTargetBadge,
+        camModalTitle;
+
+      function initCameraElements() {
+        camModal = document.getElementById("cameraModal");
+        camVideo = document.getElementById("camVideo");
+        camHiddenCanvas = document.getElementById("camHiddenCanvas");
+        camResultImg = document.getElementById("camResultImg");
+        camInstruction = document.getElementById("camInstruction");
+        camSubInstruction = document.getElementById("camSubInstruction");
+        camReticle = document.getElementById("camReticle");
+        camFlashOverlay = document.getElementById("camFlashOverlay");
+        camDebugStatus = document.getElementById("camDebugStatus");
+        camLiveControls = document.getElementById("camLiveControls");
+        camReviewControls = document.getElementById("camReviewControls");
+        camStartBtn = document.getElementById("camStartBtn");
+        camShutterBtn = document.getElementById("camShutterBtn");
+        camSwitchLensBtn = document.getElementById("camSwitchLensBtn");
+        camRetakeBtn = document.getElementById("camRetakeBtn");
+        camUsePhotoBtn = document.getElementById("camUsePhotoBtn");
+        camTargetBadge = document.getElementById("camTargetBadge");
+        camModalTitle = document.getElementById("camModalTitle");
+      }
 
       async function openCameraCapture(slot) {
+        initCameraElements();
         activeCaptureSlot = slot;
+
+        if (!camModal) {
+          console.error("Camera modal element not found");
+          alert("Camera modal element not found.");
+          return;
+        }
+
         camModal.style.display = "flex";
         document.body.style.overflow = "hidden";
 
@@ -2083,8 +2188,8 @@
           stage: "Hairfall Stage Photo",
         };
         const label = slotLabels[slot] || "Scalp Capture";
-        camTargetBadge.textContent = label;
-        camModalTitle.textContent = "Guided Crown Capture";
+        if (camTargetBadge) camTargetBadge.textContent = label;
+        if (camModalTitle) camModalTitle.textContent = "Guided Crown Capture";
 
         // Reset state
         hasCaptured = false;
@@ -2094,16 +2199,35 @@
         orientationReceived = false;
         snapCanvasRef = null;
 
-        camResultImg.style.display = "none";
-        camReviewControls.style.display = "none";
-        camLiveControls.style.display = "flex";
-        camReticle.style.display = "flex";
-        camReticle.classList.remove("perfect");
-        camShutterBtn.disabled = true;
-        camStartBtn.style.display = "none";
-        camInstruction.innerText = "Aligning...";
-        camInstruction.style.color = "#fff";
-        camSubInstruction.innerText = "Fit the crown completely inside the oval.";
+        if (camResultImg) camResultImg.style.display = "none";
+        if (camReviewControls) camReviewControls.style.display = "none";
+        if (camLiveControls) camLiveControls.style.display = "flex";
+        if (camReticle) {
+          camReticle.style.display = "flex";
+          camReticle.classList.remove("perfect");
+        }
+        if (camShutterBtn) camShutterBtn.disabled = true;
+        if (camStartBtn) camStartBtn.style.display = "none";
+        if (camInstruction) {
+          camInstruction.innerText = "Aligning...";
+          camInstruction.style.color = "#fff";
+        }
+        if (camSubInstruction) {
+          camSubInstruction.innerText = "Fit the crown completely inside the oval.";
+        }
+
+        // Check for secure context / mediaDevices support
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          if (camInstruction) {
+            camInstruction.innerText = "Camera Requires HTTPS";
+            camInstruction.style.color = "#ff6b6b";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText =
+              "Browsers restrict camera access to HTTPS or localhost. Please ensure you are browsing via https://";
+          }
+          return;
+        }
 
         // iOS motion permission request
         if (
@@ -2133,28 +2257,42 @@
           await populateCameras();
           currentCameraIndex = 0;
           await startSpecificCamera(currentCameraIndex);
-          if (rearCameras.length > 1) {
-            camSwitchLensBtn.style.display = "inline-block";
-          } else {
-            camSwitchLensBtn.style.display = "none";
+          if (camSwitchLensBtn) {
+            camSwitchLensBtn.style.display =
+              rearCameras.length > 1 ? "inline-block" : "none";
           }
         } catch (err) {
           console.error("Camera start failed:", err);
-          camInstruction.innerText = "Camera Access Error";
-          camInstruction.style.color = "#ff6b6b";
-          camSubInstruction.innerText =
-            err.message || "Please enable camera access.";
-          camStartBtn.style.display = "inline-block";
+          if (camInstruction) {
+            camInstruction.innerText = "Camera Access Error";
+            camInstruction.style.color = "#ff6b6b";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText =
+              err.message || "Please allow camera permissions in your browser.";
+          }
+          if (camStartBtn) camStartBtn.style.display = "inline-block";
         }
       }
 
       async function populateCameras() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Camera API not supported or requires HTTPS.");
+        }
         let tempStream = null;
         try {
           tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        } catch (e) {}
+        } catch (e) {
+          console.warn("Could not unmask camera labels:", e);
+        }
 
-        const devices = await navigator.mediaDevices.enumerateDevices();
+        let devices = [];
+        try {
+          devices = await navigator.mediaDevices.enumerateDevices();
+        } catch (e) {
+          console.warn("enumerateDevices failed:", e);
+        }
+
         rearCameras = devices.filter(
           (device) =>
             device.kind === "videoinput" &&
@@ -2199,46 +2337,70 @@
         }
 
         try {
-          const selectedCamera = rearCameras[index];
-          const constraints = selectedCamera
+          const selectedCamera = rearCameras && rearCameras[index];
+          const constraints = selectedCamera && selectedCamera.deviceId
             ? { video: { deviceId: { exact: selectedCamera.deviceId } } }
-            : { video: { facingMode: "environment" } };
+            : { video: { facingMode: { ideal: "environment" } } };
 
-          currentStream =
-            await navigator.mediaDevices.getUserMedia(constraints);
-          camVideo.srcObject = currentStream;
-
-          camVideo.onloadedmetadata = async () => {
+          try {
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+          } catch (e1) {
+            console.warn("Exact constraints failed, trying ideal environment:", e1);
             try {
-              await camVideo.play();
-            } catch (e) {}
+              currentStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" },
+              });
+            } catch (e2) {
+              console.warn("Environment camera failed, falling back to any video:", e2);
+              currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            }
+          }
 
-            const track = currentStream.getVideoTracks()[0];
-            const capabilities =
-              track && track.getCapabilities && track.getCapabilities();
+          if (camVideo) {
+            camVideo.srcObject = currentStream;
 
-            if (capabilities && capabilities.torch) {
+            camVideo.onloadedmetadata = async () => {
               try {
-                await track.applyConstraints({ advanced: [{ torch: true }] });
-                camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash: ON`;
-              } catch (e) {
-                camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash constraint failed`;
+                await camVideo.play();
+              } catch (e) {}
+
+              const track = currentStream.getVideoTracks()[0];
+              const capabilities =
+                track && track.getCapabilities && track.getCapabilities();
+
+              if (capabilities && capabilities.torch) {
+                try {
+                  await track.applyConstraints({ advanced: [{ torch: true }] });
+                  if (camDebugStatus) {
+                    camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash: ON`;
+                  }
+                } catch (e) {
+                  if (camDebugStatus) {
+                    camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash constraint failed`;
+                  }
+                  isDistancePerfect = true;
+                }
+              } else {
+                if (camDebugStatus) {
+                  camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash API Not Supported`;
+                }
                 isDistancePerfect = true;
               }
-            } else {
-              camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash API Not Supported`;
-              isDistancePerfect = true;
-            }
 
-            evaluateMasterConditions();
-            analyzeBrightnessLoop();
-          };
+              evaluateMasterConditions();
+              analyzeBrightnessLoop();
+            };
+          }
         } catch (err) {
           console.error("Failed to start camera", err);
-          camInstruction.innerText = "Camera Error";
-          camInstruction.style.color = "#ff6b6b";
-          camSubInstruction.innerText =
-            err.message || "Failed to start camera stream.";
+          if (camInstruction) {
+            camInstruction.innerText = "Camera Error";
+            camInstruction.style.color = "#ff6b6b";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText =
+              err.message || "Failed to start camera stream.";
+          }
         }
       }
 
@@ -2278,60 +2440,61 @@
         evaluateMasterConditions();
       }
 
-      function analyzeBrightnessLoop() {
+      let lastBrightnessCheck = 0;
+      function analyzeBrightnessLoop(timestamp) {
         if (hasCaptured || isCapturing) return;
 
-        if (camVideo.readyState >= 2) {
-          const ctx = camHiddenCanvas.getContext("2d", {
-            willReadFrequently: true,
-          });
-          camHiddenCanvas.width = 50;
-          camHiddenCanvas.height = 50;
-
-          const cropSize =
-            Math.min(camVideo.videoWidth, camVideo.videoHeight) * 0.3;
-          const sx = (camVideo.videoWidth - cropSize) / 2;
-          const sy = (camVideo.videoHeight - cropSize) / 2;
-
-          ctx.drawImage(
-            camVideo,
-            sx,
-            sy,
-            cropSize,
-            cropSize,
-            0,
-            0,
-            camHiddenCanvas.width,
-            camHiddenCanvas.height,
-          );
-          const imgData = ctx.getImageData(
-            0,
-            0,
-            camHiddenCanvas.width,
-            camHiddenCanvas.height,
-          ).data;
-
-          let sum = 0;
-          for (let i = 0; i < imgData.length; i += 4) {
-            sum +=
-              0.299 * imgData[i] +
-              0.587 * imgData[i + 1] +
-              0.114 * imgData[i + 2];
-          }
-          currentLuma = sum / (imgData.length / 4);
-
-          if (camDebugStatus.innerText.includes("Flash: ON")) {
-            if (currentLuma > MAX_LUMA) {
-              isDistancePerfect = false;
-              distanceMsg = "Move Back ↑ (Too Bright)";
-            } else if (currentLuma < MIN_LUMA) {
-              isDistancePerfect = false;
-              distanceMsg = "Move Closer ↓ (Too Dark)";
-            } else {
-              isDistancePerfect = true;
+        if (!timestamp || timestamp - lastBrightnessCheck > 120) {
+          lastBrightnessCheck = timestamp || performance.now();
+          if (camVideo && camVideo.readyState >= 2 && camHiddenCanvas) {
+            if (camHiddenCanvas.width !== 50) {
+              camHiddenCanvas.width = 50;
+              camHiddenCanvas.height = 50;
             }
+            const ctx = camHiddenCanvas.getContext("2d", {
+              willReadFrequently: true,
+            });
+
+            const cropSize =
+              Math.min(camVideo.videoWidth, camVideo.videoHeight) * 0.3;
+            const sx = (camVideo.videoWidth - cropSize) / 2;
+            const sy = (camVideo.videoHeight - cropSize) / 2;
+
+            ctx.drawImage(
+              camVideo,
+              sx,
+              sy,
+              cropSize,
+              cropSize,
+              0,
+              0,
+              50,
+              50,
+            );
+            const imgData = ctx.getImageData(0, 0, 50, 50).data;
+
+            let sum = 0;
+            for (let i = 0; i < imgData.length; i += 4) {
+              sum +=
+                0.299 * imgData[i] +
+                0.587 * imgData[i + 1] +
+                0.114 * imgData[i + 2];
+            }
+            currentLuma = sum / (imgData.length / 4);
+
+            if (camDebugStatus && camDebugStatus.innerText.includes("Flash: ON")) {
+              if (currentLuma > MAX_LUMA) {
+                isDistancePerfect = false;
+                distanceMsg = "Move Back ↑ (Too Bright)";
+              } else if (currentLuma < MIN_LUMA) {
+                isDistancePerfect = false;
+                distanceMsg = "Move Closer ↓ (Too Dark)";
+              } else {
+                isDistancePerfect = true;
+              }
+            }
+            evaluateMasterConditions();
           }
-          evaluateMasterConditions();
         }
         brightnessRafId = requestAnimationFrame(analyzeBrightnessLoop);
       }
@@ -2340,30 +2503,42 @@
         if (hasCaptured) return;
 
         if (!isAnglePerfect) {
-          camInstruction.innerText = angleMsg || "Align Angle";
-          camInstruction.style.color = "#ff6b6b";
-          camSubInstruction.innerText =
-            angleSubMsg || "Tilt phone to ~20° angle.";
-          camReticle.classList.remove("perfect");
-          camShutterBtn.disabled = true;
+          if (camInstruction) {
+            camInstruction.innerText = angleMsg || "Align Angle";
+            camInstruction.style.color = "#ff6b6b";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText =
+              angleSubMsg || "Tilt phone to ~20° angle.";
+          }
+          if (camReticle) camReticle.classList.remove("perfect");
+          if (camShutterBtn) camShutterBtn.disabled = true;
         } else if (!isDistancePerfect) {
-          camInstruction.innerText = distanceMsg || "Adjust Distance";
-          camInstruction.style.color = "#ffa726";
-          camSubInstruction.innerText = `Luminance: ${Math.round(currentLuma)} (Target: ${MIN_LUMA}–${MAX_LUMA})`;
-          camReticle.classList.remove("perfect");
-          camShutterBtn.disabled = true;
+          if (camInstruction) {
+            camInstruction.innerText = distanceMsg || "Adjust Distance";
+            camInstruction.style.color = "#ffa726";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText = `Luminance: ${Math.round(currentLuma)} (Target: ${MIN_LUMA}–${MAX_LUMA})`;
+          }
+          if (camReticle) camReticle.classList.remove("perfect");
+          if (camShutterBtn) camShutterBtn.disabled = true;
         } else {
-          camInstruction.innerText = "Perfect! Tap to Capture.";
-          camInstruction.style.color = "#00e68a";
-          camSubInstruction.innerText =
-            "Hold steady and tap the shutter button.";
-          camReticle.classList.add("perfect");
-          camShutterBtn.disabled = false;
+          if (camInstruction) {
+            camInstruction.innerText = "Perfect! Tap to Capture.";
+            camInstruction.style.color = "#00e68a";
+          }
+          if (camSubInstruction) {
+            camSubInstruction.innerText =
+              "Hold steady and tap the shutter button.";
+          }
+          if (camReticle) camReticle.classList.add("perfect");
+          if (camShutterBtn) camShutterBtn.disabled = false;
         }
       }
 
-      camShutterBtn.addEventListener("click", () => {
-        if (camShutterBtn.disabled) return;
+      function onCamShutterClick() {
+        if (camShutterBtn && camShutterBtn.disabled) return;
         isCapturing = true;
         hasCaptured = true;
 
@@ -2373,10 +2548,12 @@
         }
 
         // Shutter flash animation
-        camFlashOverlay.style.opacity = "1";
-        setTimeout(() => {
-          camFlashOverlay.style.opacity = "0";
-        }, 150);
+        if (camFlashOverlay) {
+          camFlashOverlay.style.opacity = "1";
+          setTimeout(() => {
+            camFlashOverlay.style.opacity = "0";
+          }, 150);
+        }
 
         // Turn off Torch
         if (currentStream) {
@@ -2390,35 +2567,43 @@
 
         // Draw full-resolution snapshot to canvas
         const snapCanvas = document.createElement("canvas");
-        snapCanvas.width = camVideo.videoWidth || 1280;
-        snapCanvas.height = camVideo.videoHeight || 720;
+        snapCanvas.width = (camVideo && camVideo.videoWidth) || 1280;
+        snapCanvas.height = (camVideo && camVideo.videoHeight) || 720;
         const ctx = snapCanvas.getContext("2d");
-        ctx.drawImage(camVideo, 0, 0, snapCanvas.width, snapCanvas.height);
+        if (camVideo) {
+          ctx.drawImage(camVideo, 0, 0, snapCanvas.width, snapCanvas.height);
+        }
         snapCanvasRef = snapCanvas;
 
         const dataUrl = snapCanvas.toDataURL("image/jpeg", 0.95);
-        camResultImg.src = dataUrl;
-        camResultImg.style.display = "block";
+        if (camResultImg) {
+          camResultImg.src = dataUrl;
+          camResultImg.style.display = "block";
+        }
 
-        camLiveControls.style.display = "none";
-        camReviewControls.style.display = "flex";
-        camReticle.style.display = "none";
+        if (camLiveControls) camLiveControls.style.display = "none";
+        if (camReviewControls) camReviewControls.style.display = "flex";
+        if (camReticle) camReticle.style.display = "none";
 
-        camInstruction.innerText = "Photo Captured!";
-        camInstruction.style.color = "#fff";
-        camSubInstruction.innerText =
-          "Accept this photo or tap Retake to try again.";
-      });
+        if (camInstruction) {
+          camInstruction.innerText = "Photo Captured!";
+          camInstruction.style.color = "#fff";
+        }
+        if (camSubInstruction) {
+          camSubInstruction.innerText =
+            "Accept this photo or tap Retake to try again.";
+        }
+      }
 
-      camRetakeBtn.addEventListener("click", () => {
+      function onCamRetakeClick() {
         hasCaptured = false;
         isCapturing = false;
         snapCanvasRef = null;
 
-        camResultImg.style.display = "none";
-        camReviewControls.style.display = "none";
-        camLiveControls.style.display = "flex";
-        camReticle.style.display = "flex";
+        if (camResultImg) camResultImg.style.display = "none";
+        if (camReviewControls) camReviewControls.style.display = "none";
+        if (camLiveControls) camLiveControls.style.display = "flex";
+        if (camReticle) camReticle.style.display = "flex";
 
         if (currentStream) {
           const track = currentStream.getVideoTracks()[0];
@@ -2430,9 +2615,9 @@
         }
 
         analyzeBrightnessLoop();
-      });
+      }
 
-      camUsePhotoBtn.addEventListener("click", () => {
+      function onCamUsePhotoClick() {
         if (!snapCanvasRef || !activeCaptureSlot) {
           closeCameraCapture();
           return;
@@ -2494,17 +2679,19 @@
             const prompt = document.getElementById(promptId);
             const filenameEl = document.getElementById(filenameId);
 
-            preview.src = URL.createObjectURL(blob);
-            prompt.style.display = "none";
-            container.style.display = "block";
-            filenameEl.textContent = `${filename} (${(blob.size / 1024).toFixed(1)} KB - Camera)`;
+            if (preview) preview.src = URL.createObjectURL(blob);
+            if (prompt) prompt.style.display = "none";
+            if (container) container.style.display = "block";
+            if (filenameEl) {
+              filenameEl.textContent = `${filename} (${(blob.size / 1024).toFixed(1)} KB - Camera)`;
+            }
 
             closeCameraCapture();
           },
           "image/jpeg",
           0.92,
         );
-      });
+      }
 
       function closeCameraCapture() {
         if (brightnessRafId) {
@@ -2525,26 +2712,39 @@
           currentStream = null;
         }
 
-        camModal.style.display = "none";
+        initCameraElements();
+        if (camModal) camModal.style.display = "none";
         document.body.style.overflow = "";
         activeCaptureSlot = null;
       }
 
-      camSwitchLensBtn.addEventListener("click", async () => {
+      function onCamSwitchLensClick() {
         if (rearCameras.length <= 1) return;
         currentCameraIndex = (currentCameraIndex + 1) % rearCameras.length;
-        await startSpecificCamera(currentCameraIndex);
-      });
+        startSpecificCamera(currentCameraIndex);
+      }
 
-      camStartBtn.addEventListener("click", async () => {
-        camStartBtn.style.display = "none";
-        try {
-          await populateCameras();
-          await startSpecificCamera(currentCameraIndex);
-        } catch (err) {
-          camStartBtn.style.display = "inline-block";
-        }
-      });
+      function onCamStartClick() {
+        if (camStartBtn) camStartBtn.style.display = "none";
+        populateCameras()
+          .then(() => startSpecificCamera(currentCameraIndex))
+          .catch(() => {
+            if (camStartBtn) camStartBtn.style.display = "inline-block";
+          });
+      }
+
+      function initCameraListeners() {
+        initCameraElements();
+        if (camShutterBtn) camShutterBtn.addEventListener("click", onCamShutterClick);
+        if (camRetakeBtn) camRetakeBtn.addEventListener("click", onCamRetakeClick);
+        if (camUsePhotoBtn) camUsePhotoBtn.addEventListener("click", onCamUsePhotoClick);
+        if (camSwitchLensBtn) camSwitchLensBtn.addEventListener("click", onCamSwitchLensClick);
+        if (camStartBtn) camStartBtn.addEventListener("click", onCamStartClick);
+      }
+
+      window.addEventListener("DOMContentLoaded", initCameraListeners);
+      // Run once immediately since DOM is already parsed
+      initCameraListeners();
 
       window.addEventListener("keydown", (e) => {
         if (
@@ -2555,82 +2755,11 @@
           closeCameraCapture();
         }
       });
+
+      // Expose globally
+      window.openCameraCapture = openCameraCapture;
+      window.closeCameraCapture = closeCameraCapture;
+      window.triggerFileInput = triggerFileInput;
     </script>
-
-    <!-- Guided Camera Capture Modal -->
-    <div id="cameraModal" class="cam-modal" style="display: none;">
-      <div class="cam-modal-header">
-        <div class="cam-modal-title-box">
-          <span class="cam-modal-badge" id="camTargetBadge">Crown Capture</span>
-          <div class="cam-modal-title" id="camModalTitle">Guided Scalp Capture</div>
-        </div>
-        <button
-          type="button"
-          class="cam-modal-close"
-          onclick="closeCameraCapture()"
-          aria-label="Close Camera"
-        >
-          &times;
-        </button>
-      </div>
-
-      <div class="cam-viewport">
-        <video id="camVideo" autoplay playsinline muted></video>
-        <canvas id="camHiddenCanvas" style="display: none;"></canvas>
-        <img id="camResultImg" alt="Captured Scalp Photo" style="display: none;" />
-
-        <div class="cam-overlay" id="camOverlay">
-          <div class="cam-guidance-box">
-            <div id="camInstruction">Crown Capture</div>
-            <div id="camSubInstruction">Initializing camera...</div>
-          </div>
-          <div class="cam-reticle" id="camReticle"></div>
-        </div>
-
-        <div id="camFlashOverlay"></div>
-        <div id="camDebugStatus">Waiting for camera...</div>
-      </div>
-
-      <div class="cam-controls">
-        <div id="camLiveControls" class="cam-controls-group">
-          <button
-            type="button"
-            id="camStartBtn"
-            class="cam-btn cam-btn-primary"
-            style="display: none;"
-          >
-            Start Camera
-          </button>
-          <button
-            type="button"
-            id="camShutterBtn"
-            class="cam-shutter-btn"
-            disabled
-            aria-label="Capture Shutter"
-          ></button>
-          <button
-            type="button"
-            id="camSwitchLensBtn"
-            class="cam-btn cam-btn-secondary"
-            style="display: none;"
-          >
-            🔄 Switch Lens
-          </button>
-        </div>
-
-        <div
-          id="camReviewControls"
-          class="cam-controls-group"
-          style="display: none;"
-        >
-          <button type="button" id="camRetakeBtn" class="cam-btn cam-btn-secondary">
-            Retake Photo
-          </button>
-          <button type="button" id="camUsePhotoBtn" class="cam-btn cam-btn-success">
-            Use This Photo ✓
-          </button>
-        </div>
-      </div>
-    </div>
   </body>
 </html>
