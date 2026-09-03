@@ -139,7 +139,11 @@ class FirebaseService:
         doc_payload = {
             "feedback_id": feedback_id,
             "created_at": created_at,
+            "patient_name": feedback_data.get("patient_name", ""),
+            "time_since_treatment": feedback_data.get("time_since_treatment", ""),
             "questions": {
+                "patient_name": feedback_data.get("patient_name", ""),
+                "time_since_treatment": feedback_data.get("time_since_treatment", ""),
                 "is_prev_masking_correct": feedback_data.get("is_prev_masking_correct"),
                 "prev_masking_accuracy_pct": feedback_data.get("prev_masking_pct"),
                 "is_curr_masking_correct": feedback_data.get("is_curr_masking_correct"),

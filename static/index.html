@@ -829,6 +829,44 @@
       user-select: none;
     }
 
+    .feedback-text-wrapper {
+      flex: 1;
+      max-width: 320px;
+      min-width: 220px;
+    }
+
+    .feedback-text-input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 0.45rem 0.75rem;
+      color: #ffffff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+
+    .feedback-text-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    .feedback-text-input::placeholder {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .feedback-text-wrapper {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
 
 
     .feedback-notes {
@@ -1102,10 +1140,53 @@
 
           <form id="crownFeedbackForm">
             <div class="feedback-questions-list">
-              <!-- Q1 -->
+              <!-- Q1: Patient Name -->
               <div class="feedback-question-block">
                 <div class="feedback-question-top">
-                  <span class="feedback-question-label">1. Is the previous (baseline) image masking correct?</span>
+                  <label class="feedback-question-label" for="patient_name">1. Name of the Patient</label>
+                  <div class="feedback-text-wrapper">
+                    <input 
+                      type="text" 
+                      id="patient_name" 
+                      name="patient_name" 
+                      class="feedback-text-input" 
+                      placeholder="Enter patient name..." 
+                      required>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q2: Time Since Treatment -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <label class="feedback-question-label" for="time_since_treatment">2. Time since treatment</label>
+                  <div class="feedback-text-wrapper">
+                    <input 
+                      type="text" 
+                      id="time_since_treatment" 
+                      name="time_since_treatment" 
+                      class="feedback-text-input" 
+                      list="treatment_time_options" 
+                      placeholder="e.g. 3 months, 6 weeks, 1 year..." 
+                      required>
+                    <datalist id="treatment_time_options">
+                      <option value="2 weeks"></option>
+                      <option value="1 month"></option>
+                      <option value="2 months"></option>
+                      <option value="3 months"></option>
+                      <option value="4 months"></option>
+                      <option value="6 months"></option>
+                      <option value="9 months"></option>
+                      <option value="12 months (1 year)"></option>
+                    </datalist>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q3 -->
+              <div class="feedback-question-block">
+                <div class="feedback-question-top">
+                  <span class="feedback-question-label">3. Is the previous (baseline) image masking correct?</span>
                   <div class="feedback-options">
                     <label class="feedback-chip">
                       <input type="radio" name="q_prev_mask" value="true" required> Yes
@@ -1134,10 +1215,10 @@
                 </div>
               </div>
 
-              <!-- Q2 -->
+              <!-- Q4 -->
               <div class="feedback-question-block">
                 <div class="feedback-question-top">
-                  <span class="feedback-question-label">2. Is the current (today) image masked correctly?</span>
+                  <span class="feedback-question-label">4. Is the current (today) image masked correctly?</span>
                   <div class="feedback-options">
                     <label class="feedback-chip">
                       <input type="radio" name="q_curr_mask" value="true" required> Yes
@@ -1166,10 +1247,10 @@
                 </div>
               </div>
 
-              <!-- Q3 -->
+              <!-- Q5 -->
               <div class="feedback-question-block">
                 <div class="feedback-question-top">
-                  <span class="feedback-question-label">3. Is the hair and scalp classified correctly for baseline image?</span>
+                  <span class="feedback-question-label">5. Is the hair and scalp classified correctly for baseline image?</span>
                   <div class="feedback-options">
                     <label class="feedback-chip">
                       <input type="radio" name="q_prev_class" value="true" required> Yes
@@ -1198,10 +1279,10 @@
                 </div>
               </div>
 
-              <!-- Q4 -->
+              <!-- Q6 -->
               <div class="feedback-question-block">
                 <div class="feedback-question-top">
-                  <span class="feedback-question-label">4. Hair and scalp classification correct for current image?</span>
+                  <span class="feedback-question-label">6. Hair and scalp classification correct for current image?</span>
                   <div class="feedback-options">
                     <label class="feedback-chip">
                       <input type="radio" name="q_curr_class" value="true" required> Yes
@@ -1230,10 +1311,10 @@
                 </div>
               </div>
 
-              <!-- Q5 -->
+              <!-- Q7 -->
               <div class="feedback-question-block">
                 <div class="feedback-question-top">
-                  <span class="feedback-question-label">5. Is the overall comparison result valid?</span>
+                  <span class="feedback-question-label">7. Is the overall comparison result valid?</span>
                   <div class="feedback-options">
                     <label class="feedback-chip">
                       <input type="radio" name="q_result_valid" value="true" required> Yes
@@ -1657,14 +1738,30 @@
     crownFeedbackForm.addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      // 1. Yes / No selections
+      // 1. Patient Details
+      const patientName = document.getElementById('patient_name')?.value.trim();
+      const timeSinceTreatment = document.getElementById('time_since_treatment')?.value.trim();
+
+      if (!patientName) {
+        alert('Please enter the Name of the Patient.');
+        document.getElementById('patient_name')?.focus();
+        return;
+      }
+
+      if (!timeSinceTreatment) {
+        alert('Please enter the time since treatment.');
+        document.getElementById('time_since_treatment')?.focus();
+        return;
+      }
+
+      // 2. Yes / No selections (Questions 3-7)
       const qPrevMaskRadio = crownFeedbackForm.elements['q_prev_mask']?.value;
       const qCurrMaskRadio = crownFeedbackForm.elements['q_curr_mask']?.value;
       const qPrevClassRadio = crownFeedbackForm.elements['q_prev_class']?.value;
       const qCurrClassRadio = crownFeedbackForm.elements['q_curr_class']?.value;
       const qResultValidRadio = crownFeedbackForm.elements['q_result_valid']?.value;
 
-      // 2. Numerical percentage inputs (0 - 100)
+      // 3. Numerical percentage inputs (0 - 100)
       const qPrevMaskPctStr = document.getElementById('q_prev_mask_pct')?.value.trim();
       const qCurrMaskPctStr = document.getElementById('q_curr_mask_pct')?.value.trim();
       const qPrevClassPctStr = document.getElementById('q_prev_class_pct')?.value.trim();
@@ -1673,12 +1770,12 @@
       const notes = document.getElementById('feedbackNotes').value;
 
       if (!qPrevMaskRadio || !qCurrMaskRadio || !qPrevClassRadio || !qCurrClassRadio || !qResultValidRadio) {
-        alert('Please answer the Yes/No question for all 5 sections.');
+        alert('Please answer the Yes/No validation questions for all sections (Questions 3 to 7).');
         return;
       }
 
       if (!qPrevMaskPctStr || !qCurrMaskPctStr || !qPrevClassPctStr || !qCurrClassPctStr || !qResultValidPctStr) {
-        alert('Please enter a percentage correctness value (0 to 100) for all 5 questions.');
+        alert('Please enter a percentage correctness value (0 to 100) for all assessment questions (Questions 3 to 7).');
         return;
       }
 
@@ -1699,6 +1796,10 @@
 
       try {
         const formData = new FormData();
+        // Patient Details
+        formData.append('patient_name', patientName);
+        formData.append('time_since_treatment', timeSinceTreatment);
+
         // Yes / No Booleans
         formData.append('is_prev_masking_correct', qPrevMaskRadio === 'true');
         formData.append('is_curr_masking_correct', qCurrMaskRadio === 'true');

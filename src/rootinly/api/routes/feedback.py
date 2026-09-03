@@ -17,6 +17,8 @@ router = APIRouter(tags=["Feedback"])
     include_in_schema=False,
 )
 async def submit_crown_feedback(
+    patient_name: str = Form(default="", description="Name of the Patient"),
+    time_since_treatment: str = Form(default="", description="Time since treatment"),
     is_prev_masking_correct: bool = Form(..., description="Is baseline image masking correct (Yes/No)"),
     prev_masking_pct: float = Form(..., ge=0, le=100, description="Percentage correctness of baseline masking (0-100)"),
     is_curr_masking_correct: bool = Form(..., description="Is follow-up image masking correct (Yes/No)"),
@@ -33,7 +35,7 @@ async def submit_crown_feedback(
     today_visit_image: UploadFile = File(None, description="Original follow-up crown image"),
 ):
     """
-    Receives both Yes/No validation decisions and percentage accuracy scores (0-100),
+    Receives patient information, Yes/No validation decisions, and percentage accuracy scores (0-100),
     then saves the records to Firebase Storage and Cloud Firestore.
     """
     try:
@@ -48,6 +50,8 @@ async def submit_crown_feedback(
                 logger.warning(f"Failed to parse feedback metrics JSON: {pe}")
 
         feedback_data = {
+            "patient_name": patient_name,
+            "time_since_treatment": time_since_treatment,
             "is_prev_masking_correct": is_prev_masking_correct,
             "prev_masking_pct": prev_masking_pct,
             "is_curr_masking_correct": is_curr_masking_correct,
