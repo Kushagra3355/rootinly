@@ -1,1265 +1,2636 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rootinly AI | Hair & Scalp Analysis</title>
-  <style>
-    :root {
-      --bg: #0b0f19;
-      --card-bg: #1e293b;
-      --card-bg-subtle: rgba(15, 23, 42, 0.65);
-      --card-border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --success: #10b981;
-      --danger: #ef4444;
-      --danger-bg: rgba(239, 68, 68, 0.15);
-      --radius-sm: 8px;
-      --radius: 12px;
-      --radius-lg: 16px;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScalpSync | Scalp Coverage Analysis — AiProff</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f8faf9;
+        --bg-subtle: #f0f5f2;
+        --card-bg: #ffffff;
+        --card-bg-subtle: #f6f9f7;
+        --card-border: #d5e0da;
+        --card-border-light: #e8efe9;
+        --text: #1a2e23;
+        --text-muted: #5a7265;
+        --text-dim: #8a9f93;
+        --green: #1a7a4c;
+        --green-light: #22955d;
+        --green-bg: #e6f5ed;
+        --green-border: #b3dfc7;
+        --amber: #c47a1a;
+        --amber-light: #f5a623;
+        --amber-bg: #fef5e6;
+        --amber-border: #f0d9a8;
+        --blue: #2e7db5;
+        --blue-bg: #e8f2fa;
+        --danger: #c53030;
+        --danger-bg: #fef2f2;
+        --radius-sm: 8px;
+        --radius: 12px;
+        --radius-lg: 16px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07);
+        --font-sans:
+          "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        --font-serif: "DM Serif Display", Georgia, "Times New Roman", serif;
+      }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-sans);
+      }
 
-    body {
-      background-color: var(--bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1.5rem 1rem 3rem;
-    }
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 1rem 3rem;
+      }
 
-    .container {
-      width: 100%;
-      max-width: 980px;
-    }
+      .container {
+        width: 100%;
+        max-width: 980px;
+      }
 
-    /* Header & Navigation Bar */
-    header {
-      margin-bottom: 2rem;
-    }
+      header {
+        margin-bottom: 2rem;
+      }
 
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--card-border-light);
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
 
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-      font-size: 1.25rem;
-      font-weight: 900;
-      color: #ffffff;
-      letter-spacing: -0.05em;
-    }
+      .brand-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(26, 122, 76, 0.25);
+      }
 
-    .brand-text h2 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+      .brand-logo svg {
+        width: 22px;
+        height: 22px;
+      }
 
-    .brand-text span {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
+      .brand-text h2 {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+        font-weight: 400;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
 
-    .system-status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--card-border);
-      padding: 0.4rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-    }
+      .brand-text span {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-      animation: pulse 2s infinite;
-    }
+      .system-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 0.4rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green-light);
+        box-shadow: 0 0 6px rgba(34, 149, 93, 0.5);
+        animation: pulse 2.5s infinite;
+      }
 
-    /* Module Navigation Tabs */
-    .nav-tabs {
-      display: flex;
-      background: rgba(17, 24, 39, 0.9);
-      border: 1px solid var(--card-border);
-      padding: 0.35rem;
-      border-radius: var(--radius-lg);
-      gap: 0.5rem;
-      margin-bottom: 1.75rem;
-      box-shadow: var(--shadow);
-    }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
 
-    .nav-tab {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.85rem 1.25rem;
-      background: transparent;
-      border: none;
-      border-radius: var(--radius);
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      text-align: center;
-    }
+      .nav-tabs {
+        display: flex;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 0.3rem;
+        border-radius: var(--radius-lg);
+        gap: 0.35rem;
+        margin-bottom: 1.75rem;
+        box-shadow: var(--shadow);
+      }
 
-    .nav-tab:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.04);
-    }
+      .nav-tab {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 1.25rem;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+      }
 
-    .nav-tab.active {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.25));
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-    }
+      .nav-tab:hover {
+        color: var(--text);
+        background: var(--bg-subtle);
+      }
 
-    /* Module View Container */
-    .module-view {
-      display: none;
-      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+      .nav-tab.active {
+        background: var(--green);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(26, 122, 76, 0.2);
+      }
 
-    .module-view.active {
-      display: block;
-    }
+      .module-view {
+        display: none;
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+      .module-view.active {
+        display: block;
+      }
 
-    /* Module Header Banner */
-    .module-banner {
-      text-align: center;
-      margin-bottom: 1.75rem;
-    }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .badge-module {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(59, 130, 246, 0.12);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.28);
-      padding: 0.25rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 0.6rem;
-    }
+      .module-banner {
+        text-align: center;
+        margin-bottom: 1.75rem;
+      }
 
-    .module-banner h1 {
-      font-size: 1.85rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 0.4rem;
-    }
+      .badge-module {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: var(--green-bg);
+        color: var(--green);
+        border: 1px solid var(--green-border);
+        padding: 0.25rem 0.8rem;
+        border-radius: 9999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 0.6rem;
+      }
 
-    .module-banner p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      max-width: 620px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
+      .module-banner h1 {
+        font-family: var(--font-serif);
+        font-size: 1.85rem;
+        font-weight: 400;
+        color: var(--text);
+        margin-bottom: 0.4rem;
+      }
 
-    /* Common Card Styling */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 1.75rem;
-      box-shadow: var(--shadow);
-      margin-bottom: 1.75rem;
-      position: relative;
-    }
+      .module-banner p {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.55;
+      }
 
-    /* Upload Grids */
-    .upload-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.75rem;
-    }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        padding: 1.75rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.75rem;
+        position: relative;
+      }
 
-    .upload-single-container {
-      max-width: 460px;
-      margin: 0 auto 1.75rem;
-    }
-
-    @media (max-width: 720px) {
       .upload-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.75rem;
       }
-    }
 
-    .upload-box {
-      border: 2px dashed var(--card-border);
-      border-radius: var(--radius);
-      padding: 1.75rem 1rem;
-      text-align: center;
-      position: relative;
-      cursor: pointer;
-      background: var(--card-bg-subtle);
-      transition: all 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 220px;
-    }
-
-    .upload-box:hover, .upload-box.dragover {
-      border-color: var(--primary);
-      background: rgba(59, 130, 246, 0.07);
-      transform: translateY(-2px);
-    }
-
-    .upload-box input[type="file"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-      z-index: 5;
-    }
-
-    .upload-icon {
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .upload-title {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--text);
-      margin-bottom: 0.25rem;
-    }
-
-    .upload-desc {
-      font-size: 0.825rem;
-      color: var(--text-muted);
-    }
-
-    .preview-container {
-      position: relative;
-      width: 100%;
-      display: none;
-      text-align: center;
-    }
-
-    .preview-img {
-      max-width: 100%;
-      max-height: 260px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      display: block;
-      margin: 0 auto;
-      background: #000;
-    }
-
-    .file-tag {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: #60a5fa;
-      font-weight: 600;
-      word-break: break-all;
-    }
-
-    .btn-change-file {
-      margin-top: 0.5rem;
-      padding: 0.3rem 0.75rem;
-      font-size: 0.75rem;
-      background: rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
-      cursor: pointer;
-      display: inline-block;
-      position: relative;
-      z-index: 10;
-    }
-
-    .btn-change-file:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-    }
-
-    /* Action Buttons */
-    .btn-action {
-      width: 100%;
-      padding: 1rem 1.5rem;
-      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
-      color: #ffffff;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-    }
-
-    .btn-action.btn-stage {
-      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
-      box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
-    }
-
-    .btn-action:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.5);
-    }
-
-    .btn-action.btn-stage:hover:not(:disabled) {
-      box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5);
-    }
-
-    .btn-action:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Loading Box */
-    .loading-box {
-      display: none;
-      text-align: center;
-      padding: 2rem 1rem;
-    }
-
-    .spinner {
-      width: 42px;
-      height: 42px;
-      border: 4px solid rgba(59, 130, 246, 0.2);
-      border-left-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    .spinner.spinner-stage {
-      border-left-color: #818cf8;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      color: #60a5fa;
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .loading-subtext {
-      font-size: 0.825rem;
-      color: var(--text-muted);
-      margin-top: 0.35rem;
-    }
-
-    /* Error Alert */
-    .alert-error {
-      display: none;
-      background: var(--danger-bg);
-      border: 1px solid var(--danger);
-      color: #fca5a5;
-      padding: 1rem 1.25rem;
-      border-radius: var(--radius);
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-
-    /* Results Sections */
-    .results-section {
-      display: none;
-      animation: fadeIn 0.4s ease;
-    }
-
-    .results-header {
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .results-header h3 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    /* Crown Results */
-    .deltas-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-bottom: 1.75rem;
-    }
-
-    @media (max-width: 600px) {
-      .deltas-grid {
-        grid-template-columns: 1fr;
+      .upload-single-container {
+        max-width: 460px;
+        margin: 0 auto 1.75rem;
       }
-    }
 
-    .delta-card {
-      background: var(--card-bg-subtle);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      text-align: center;
-    }
+      @media (max-width: 720px) {
+        .upload-grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    .delta-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+      .upload-box {
+        border: 2px dashed var(--card-border);
+        border-radius: var(--radius);
+        padding: 1.75rem 1rem;
+        text-align: center;
+        position: relative;
+        cursor: default;
+        background: var(--card-bg-subtle);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+      }
 
-    .delta-value {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin: 0.35rem 0;
-    }
+      .upload-box:hover,
+      .upload-box.dragover {
+        border-color: var(--green);
+        background: var(--green-bg);
+        transform: translateY(-2px);
+      }
 
-    .positive { color: var(--success); }
-    .negative { color: var(--danger); }
+      .upload-box input[type="file"] {
+        display: none;
+      }
 
-    .delta-target {
-      font-size: 0.775rem;
-      color: var(--text-dim);
-    }
+      .upload-icon {
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .metrics-comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-bottom: 1.75rem;
-    }
+      .upload-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text);
+        margin-bottom: 0.25rem;
+      }
 
-    @media (max-width: 600px) {
+      .upload-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .upload-choice-actions {
+        display: flex;
+        gap: 0.55rem;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-choice {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 0.95rem;
+        border-radius: var(--radius);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid var(--card-border);
+      }
+
+      .btn-choice-upload {
+        background: var(--card-bg);
+        color: var(--text);
+      }
+      .btn-choice-upload:hover {
+        background: var(--bg-subtle);
+        border-color: var(--card-border);
+        transform: translateY(-1px);
+      }
+
+      .btn-choice-camera {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+        box-shadow: 0 2px 6px rgba(26, 122, 76, 0.2);
+      }
+      .btn-choice-camera:hover {
+        background: var(--green-light);
+        transform: translateY(-1px);
+      }
+
+      #moduleStage .btn-choice-camera {
+        background: var(--blue);
+        border-color: var(--blue);
+        box-shadow: 0 2px 6px rgba(46, 125, 181, 0.2);
+      }
+      #moduleStage .btn-choice-camera:hover {
+        background: #3a8cc4;
+      }
+
+      .upload-drop-hint {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        margin-top: 0.55rem;
+      }
+
+      .preview-container {
+        position: relative;
+        width: 100%;
+        display: none;
+        text-align: center;
+      }
+
+      .preview-img {
+        max-width: 100%;
+        max-height: 260px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+        display: block;
+        margin: 0 auto;
+        background: #fafafa;
+      }
+
+      .file-tag {
+        margin-top: 0.5rem;
+        font-size: 0.72rem;
+        color: var(--green);
+        font-weight: 600;
+        word-break: break-all;
+      }
+
+      .preview-actions {
+        display: flex;
+        gap: 0.4rem;
+        justify-content: center;
+        margin-top: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-change-file {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.72rem;
+        background: var(--bg-subtle);
+        color: var(--text-muted);
+        border: 1px solid var(--card-border);
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-block;
+        position: relative;
+        z-index: 10;
+        transition: all 0.15s ease;
+      }
+
+      .btn-change-file:hover {
+        background: var(--card-border-light);
+        color: var(--text);
+      }
+
+      .btn-remove-file {
+        color: var(--danger);
+      }
+      .btn-remove-file:hover {
+        background: var(--danger-bg);
+        border-color: #fca5a5;
+        color: var(--danger);
+      }
+
+      /* Guided Camera Modal */
+      .cam-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        color: #fff;
+        user-select: none;
+        -webkit-user-select: none;
+        overflow: hidden;
+      }
+
+      .cam-modal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 40;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0) 100%);
+      }
+
+      .cam-modal-title-box {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .cam-modal-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: rgba(255, 255, 255, 0.18);
+        padding: 2px 8px;
+        border-radius: 999px;
+        display: inline-block;
+        width: fit-content;
+      }
+
+      .cam-modal-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .cam-modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        font-size: 1.6rem;
+        line-height: 1;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+      .cam-modal-close:hover {
+        background: rgba(255, 255, 255, 0.35);
+        transform: scale(1.05);
+      }
+
+      .cam-viewport {
+        position: relative;
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #camVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      #camResultImg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 25;
+      }
+
+      .cam-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .cam-guidance-box {
+        position: absolute;
+        top: 12%;
+        background: rgba(0, 0, 0, 0.82);
+        padding: 12px 22px;
+        border-radius: 18px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        width: 88%;
+        max-width: 340px;
+      }
+
+      #camInstruction {
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        color: #fff;
+        transition: color 0.3s;
+      }
+
+      #camSubInstruction {
+        font-size: 12px;
+        color: #bbb;
+        line-height: 1.35;
+      }
+
+      .cam-reticle {
+        width: 220px;
+        height: 280px;
+        border: 3px dashed rgba(255, 255, 255, 0.65);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55);
+      }
+
+      .cam-reticle.perfect {
+        border-color: #00e68a;
+        border-style: solid;
+        box-shadow: 0 0 20px rgba(0, 230, 138, 0.55), inset 0 0 20px rgba(0, 230, 138, 0.3), 0 0 0 4000px rgba(0, 0, 0, 0.6);
+      }
+
+      #camFlashOverlay {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 999;
+        transition: opacity 0.15s ease-out;
+      }
+
+      #camDebugStatus {
+        position: absolute;
+        bottom: 15px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        text-align: center;
+        width: 100%;
+        pointer-events: none;
+        z-index: 15;
+      }
+
+      .cam-controls {
+        position: absolute;
+        bottom: 5%;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        z-index: 35;
+        pointer-events: none;
+      }
+
+      .cam-controls-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        pointer-events: auto;
+        flex-wrap: wrap;
+      }
+
+      .cam-btn {
+        pointer-events: auto;
+        padding: 13px 26px;
+        font-size: 15px;
+        font-weight: 700;
+        border-radius: 30px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.1s, opacity 0.3s;
+      }
+      .cam-btn:active {
+        transform: scale(0.95);
+      }
+
+      .cam-btn-primary {
+        background: #fff;
+        color: #000;
+      }
+
+      .cam-btn-secondary {
+        background: rgba(255, 255, 255, 0.22);
+        color: #fff;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        font-size: 13px;
+        padding: 10px 18px;
+      }
+
+      .cam-btn-success {
+        background: #00e68a;
+        color: #000;
+        box-shadow: 0 4px 14px rgba(0, 230, 138, 0.4);
+      }
+
+      .cam-shutter-btn {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #00e68a;
+        border: 5px solid #fff;
+        box-shadow: 0 4px 16px rgba(0, 230, 138, 0.4);
+        pointer-events: auto;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.1s, opacity 0.3s;
+        display: block;
+      }
+      .cam-shutter-btn:active {
+        transform: scale(0.92);
+      }
+      .cam-shutter-btn:disabled {
+        background: #555;
+        border-color: #888;
+        box-shadow: none;
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-action {
+        width: 100%;
+        padding: 0.9rem 1.5rem;
+        background: var(--green);
+        color: #ffffff;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(26, 122, 76, 0.25);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .btn-action.btn-stage {
+        background: var(--blue);
+        box-shadow: 0 2px 10px rgba(46, 125, 181, 0.25);
+      }
+
+      .btn-action:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(26, 122, 76, 0.3);
+      }
+
+      .btn-action.btn-stage:hover:not(:disabled) {
+        box-shadow: 0 4px 16px rgba(46, 125, 181, 0.3);
+      }
+
+      .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .loading-box {
+        display: none;
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+
+      .spinner {
+        width: 38px;
+        height: 38px;
+        border: 3px solid var(--green-bg);
+        border-left-color: var(--green);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      .spinner.spinner-stage {
+        border-color: var(--blue-bg);
+        border-left-color: var(--blue);
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        color: var(--green);
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+
+      .loading-subtext {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.3rem;
+      }
+
+      .alert-error {
+        display: none;
+        background: var(--danger-bg);
+        border: 1px solid #fecaca;
+        color: var(--danger);
+        padding: 0.9rem 1.25rem;
+        border-radius: var(--radius);
+        margin-bottom: 1.5rem;
+        font-size: 0.88rem;
+        line-height: 1.4;
+      }
+
+      .results-section {
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .results-header {
+        border-bottom: 1px solid var(--card-border-light);
+        padding-bottom: 0.85rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .results-header h3 {
+        font-family: var(--font-serif);
+        font-size: 1.3rem;
+        font-weight: 400;
+        color: var(--text);
+      }
+
+      .hero-number {
+        text-align: center;
+        padding: 1.25rem 0 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .hero-number .headline {
+        font-family: var(--font-serif);
+        font-size: 3.5rem;
+        font-weight: 400;
+        line-height: 1;
+      }
+
+      .hero-number .headline.positive {
+        color: var(--green);
+      }
+      .hero-number .headline.negative {
+        color: var(--danger);
+      }
+      .hero-number .headline.neutral {
+        color: var(--text-muted);
+      }
+
+      .hero-number .hero-sub {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin-top: 0.35rem;
+      }
+
+      .hero-number .hero-sub strong {
+        color: var(--text);
+        font-weight: 700;
+      }
+
       .metrics-comparison {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
       }
-    }
 
-    .visit-card {
-      background: rgba(15, 23, 42, 0.4);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-    }
+      @media (max-width: 600px) {
+        .metrics-comparison {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    .visit-card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      color: #e2e8f0;
-    }
+      .visit-card {
+        background: var(--card-bg-subtle);
+        border: 1px solid var(--card-border-light);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+      }
 
-    .metric-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.4rem;
-      font-size: 0.9rem;
-    }
+      .visit-card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.85rem;
+        color: var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
 
-    .metric-name { color: var(--text-muted); }
-    .metric-num { font-weight: 700; color: #fff; }
+      .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.35rem;
+        font-size: 0.88rem;
+      }
 
-    .progress-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #334155;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
+      .metric-name {
+        color: var(--text-muted);
+      }
+      .metric-num {
+        font-weight: 700;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
 
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #10b981);
-      border-radius: 999px;
-      transition: width 0.8s ease-in-out;
-    }
+      .progress-bar-bg {
+        width: 100%;
+        height: 8px;
+        background: #e8efe9;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 0.85rem;
+      }
 
-    /* Heatmap Overlays */
-    .heatmaps-section {
-      margin-top: 1.5rem;
-    }
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.8s ease-in-out;
+      }
 
-    .heatmaps-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
+      .bar-coverage {
+        background: var(--green);
+      }
 
-    .heatmaps-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
+      .bar-exposed {
+        background: var(--amber-light);
+      }
 
-    @media (max-width: 600px) {
+      .heatmaps-section {
+        margin-top: 1.25rem;
+      }
+
+      .heatmaps-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text);
+      }
+
       .heatmaps-grid {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
       }
-    }
 
-    .heatmap-box {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .heatmap-box h4 {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .heatmap-box img {
-      max-width: 100%;
-      max-height: 320px;
-      width: auto;
-      height: auto;
-      object-fit: contain;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--card-border);
-      display: block;
-      margin: 0 auto;
-    }
-
-    .legend {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1.25rem;
-      margin-top: 1.25rem;
-      font-size: 0.825rem;
-      color: var(--text-muted);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-    }
-
-    /* Clean Stage Results (Strictly Stage Level & Confidence Score Only) */
-    .stage-simple-card {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 1.75rem 2rem;
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
-    .stage-simple-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-    }
-
-    .stage-simple-row:not(:last-child) {
-      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-    }
-
-    .stage-simple-label {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      font-weight: 500;
-    }
-
-    .stage-simple-val {
-      font-weight: 700;
-      font-size: 1.35rem;
-      color: #ffffff;
-    }
-
-    .stage-highlight {
-      color: #818cf8;
-      font-size: 1.45rem;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: auto;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      padding-top: 2rem;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <!-- Top System Header -->
-    <header>
-      <div class="top-bar">
-        <div class="brand">
-          <div class="brand-logo">R</div>
-          <div class="brand-text">
-            <h2>Rootinly AI</h2>
-            <span>Clinical Scalp Intelligence Platform</span>
-          </div>
-        </div>
-
-        <div class="system-status" id="systemStatus">
-          <div class="status-dot"></div>
-          <span id="statusText">Services Operational (v2.0)</span>
-        </div>
-      </div>
-
-      <!-- Navigation Tabs for Switching Modules -->
-      <nav class="nav-tabs" role="tablist">
-        <button class="nav-tab active" id="tabCrown" onclick="switchModule('crown')" role="tab" aria-selected="true">
-          <span>Hair Growth Comparison</span>
-        </button>
-        <button class="nav-tab" id="tabStage" onclick="switchModule('stage')" role="tab" aria-selected="false">
-          <span>Hairfall Stage Determiner</span>
-        </button>
-      </nav>
-    </header>
-
-    <!-- Global Error Banner -->
-    <div id="globalError" class="alert-error"></div>
-
-    <!-- ======================================================= -->
-    <!-- MODULE 1: Crown Hair Comparison                        -->
-    <!-- ======================================================= -->
-    <main id="moduleCrown" class="module-view active">
-      <div class="module-banner">
-        <div class="badge-module">Custom Growth Comparison Model</div>
-        <h1>Top-View Comparison</h1>
-        <p>Upload baseline and follow-up top-down vertex photos to compute clinical hair density changes and organic contour overlays.</p>
-      </div>
-
-      <div class="card">
-        <form id="crownForm">
-          <div class="upload-grid">
-            <!-- Previous Visit -->
-            <div class="upload-box" id="drop-last">
-              <input type="file" id="last_visit_image" accept="image/*" required>
-              <div id="prompt-last">
-                <div class="upload-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                </div>
-                <div class="upload-title">Previous Visit Photo</div>
-                <div class="upload-desc">Baseline crown image (JPG, PNG)</div>
-              </div>
-              <div class="preview-container" id="container-last">
-                <img class="preview-img" id="preview-last" alt="Previous Visit Preview">
-                <div class="file-tag" id="filename-last"></div>
-                <button type="button" class="btn-change-file" onclick="resetFile('last')">Replace Image</button>
-              </div>
-            </div>
-
-            <!-- Today's Visit -->
-            <div class="upload-box" id="drop-today">
-              <input type="file" id="today_visit_image" accept="image/*" required>
-              <div id="prompt-today">
-                <div class="upload-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                </div>
-                <div class="upload-title">Today's Visit Photo</div>
-                <div class="upload-desc">Follow-up crown image (JPG, PNG)</div>
-              </div>
-              <div class="preview-container" id="container-today">
-                <img class="preview-img" id="preview-today" alt="Today Visit Preview">
-                <div class="file-tag" id="filename-today"></div>
-                <button type="button" class="btn-change-file" onclick="resetFile('today')">Replace Image</button>
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" id="crownSubmitBtn" class="btn-action">
-            <span>Compare Both Visits</span>
-          </button>
-
-          <div class="loading-box" id="crownLoading">
-            <div class="spinner"></div>
-            <div class="loading-text">Analyzing Follicular Density...</div>
-            <div class="loading-subtext">Executing dynamic contour extraction and skin tone colorimetry</div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Crown Comparison Results Section (No duration, No logs) -->
-      <div class="card results-section" id="crownResults">
-        <div class="results-header">
-          <h3>Clinical Comparison Analysis</h3>
-        </div>
-
-        <!-- Deltas Grid -->
-        <div class="deltas-grid">
-          <div class="delta-card">
-            <div class="delta-label">Hair Density Delta</div>
-            <div id="densityDeltaVal" class="delta-value">--</div>
-            <div class="delta-target">Target: Progressive Increase (+)</div>
-          </div>
-          <div class="delta-card">
-            <div class="delta-label">Scalp Visibility Delta</div>
-            <div id="scalpDeltaVal" class="delta-value">--</div>
-            <div class="delta-target">Target: Reduction in Exposure (-)</div>
-          </div>
-        </div>
-
-        <!-- Comparison Breakdown Cards -->
-        <div class="metrics-comparison">
-          <div class="visit-card">
-            <div class="visit-card-title">Previous Visit (Baseline)</div>
-            <div class="metric-row">
-              <span class="metric-name">Hair Density:</span>
-              <span class="metric-num" id="prevDensity">--%</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" id="prevDensityBar" style="width: 0%;"></div>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Scalp Visibility:</span>
-              <span class="metric-num" id="prevScalp">--%</span>
-            </div>
-          </div>
-
-          <div class="visit-card">
-            <div class="visit-card-title">Today's Visit (Follow-up)</div>
-            <div class="metric-row">
-              <span class="metric-name">Hair Density:</span>
-              <span class="metric-num" id="todayDensity">--%</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" id="todayDensityBar" style="width: 0%;"></div>
-            </div>
-            <div class="metric-row">
-              <span class="metric-name">Scalp Visibility:</span>
-              <span class="metric-num" id="todayScalp">--%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Visual Heatmap Overlays -->
-        <div class="heatmaps-section" id="visualizationsSection">
-          <div class="heatmaps-title">Follicular Segmentation Overlays</div>
-          <div class="heatmaps-grid">
-            <div class="heatmap-box">
-              <h4>Baseline Overlay</h4>
-              <img id="overlayLast" src="" alt="Baseline Overlay">
-            </div>
-            <div class="heatmap-box">
-              <h4>Follow-up Overlay</h4>
-              <img id="overlayToday" src="" alt="Follow-up Overlay">
-            </div>
-          </div>
-          <div class="legend">
-            <div class="legend-item">
-              <div class="legend-color" style="background: #00dc64;"></div>
-              <span>Dense Hair Strands</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: #ff5a00;"></div>
-              <span>Exposed Scalp / Skin</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background: #00ffff;"></div>
-              <span>Contour Boundary</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- ======================================================= -->
-    <!-- MODULE 2: Hairfall Stage Determiner                    -->
-    <!-- ======================================================= -->
-    <main id="moduleStage" class="module-view">
-      <div class="module-banner">
-        <div class="badge-module" style="color: #a5b4fc; background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.35);">
-          Hairfall Stage Classification Model
-        </div>
-        <h1>Hairfall Stage Determiner</h1>
-        <p>Upload a scalp photograph to classify hairfall stage level and model confidence score.</p>
-      </div>
-
-      <div class="card">
-        <form id="stageForm">
-          <div class="upload-single-container">
-            <div class="upload-box" id="drop-stage">
-              <input type="file" id="stage_image" accept="image/*" required>
-              <div id="prompt-stage">
-                <div class="upload-icon">
-                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                </div>
-                <div class="upload-title">Select Scalp Image</div>
-                <div class="upload-desc">Drop vertex or hairline photo (JPG, PNG)</div>
-              </div>
-              <div class="preview-container" id="container-stage">
-                <img class="preview-img" id="preview-stage" alt="Stage Image Preview">
-                <div class="file-tag" id="filename-stage"></div>
-                <button type="button" class="btn-change-file" onclick="resetFile('stage')">Replace Image</button>
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" id="stageSubmitBtn" class="btn-action btn-stage">
-            <span>Predict Stage</span>
-          </button>
-
-          <div class="loading-box" id="stageLoading">
-            <div class="spinner spinner-stage"></div>
-            <div class="loading-text" style="color: #a5b4fc;">Predicting Hairfall Stage...</div>
-            <div class="loading-subtext">Processing image with custom classification model</div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Stage Results Section: Strictly Stage Level and Confidence Score Only (No duration, No observations/descriptions, No logs) -->
-      <div class="card results-section" id="stageResults">
-        <div class="results-header">
-          <h3>Stage Determination Result</h3>
-        </div>
-
-        <div class="stage-simple-card">
-          <div class="stage-simple-row">
-            <span class="stage-simple-label">Stage:</span>
-            <span class="stage-simple-val stage-highlight" id="resStage">-</span>
-          </div>
-          <div class="stage-simple-row">
-            <span class="stage-simple-label">Confidence:</span>
-            <span class="stage-simple-val" id="resConfidence">-</span>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <footer>
-      Rootinly AI Engine - Dual-Module Unified Microservice - Crown Comparison &amp; Hairfall Stage Classification
-    </footer>
-  </div>
-
-  <script>
-    // Module Navigation / Switching
-    function switchModule(moduleName) {
-      const isCrown = moduleName === 'crown';
-      
-      document.getElementById('tabCrown').classList.toggle('active', isCrown);
-      document.getElementById('tabCrown').setAttribute('aria-selected', isCrown ? 'true' : 'false');
-      
-      document.getElementById('tabStage').classList.toggle('active', !isCrown);
-      document.getElementById('tabStage').setAttribute('aria-selected', !isCrown ? 'true' : 'false');
-
-      document.getElementById('moduleCrown').classList.toggle('active', isCrown);
-      document.getElementById('moduleStage').classList.toggle('active', !isCrown);
-
-      window.location.hash = isCrown ? '#crown' : '#stage';
-      clearGlobalError();
-    }
-
-    // Handle Hash on Load
-    window.addEventListener('DOMContentLoaded', () => {
-      if (window.location.hash === '#stage' || window.location.hash === '#stage-determiner') {
-        switchModule('stage');
-      } else {
-        switchModule('crown');
-      }
-      checkSystemHealth();
-    });
-
-    // System Health Check
-    async function checkSystemHealth() {
-      try {
-        const res = await fetch('/api/v1/health');
-        if (res.ok) {
-          const data = await res.json();
-          const statusText = document.getElementById('statusText');
-          if (data.status === 'healthy') {
-            statusText.textContent = `Online (${data.active_modules ? data.active_modules.length : 2} Modules Active)`;
-          } else {
-            statusText.textContent = 'Degraded Mode';
-          }
+      @media (max-width: 600px) {
+        .heatmaps-grid {
+          grid-template-columns: 1fr;
         }
-      } catch (e) {
-        // Fallback silently if offline
       }
-    }
 
-    // Error Helpers
-    const globalError = document.getElementById('globalError');
-    function showGlobalError(msg) {
-      globalError.textContent = msg;
-      globalError.style.display = 'block';
-      globalError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    function clearGlobalError() {
-      globalError.textContent = '';
-      globalError.style.display = 'none';
-    }
+      .heatmap-box {
+        background: var(--card-bg-subtle);
+        border: 1px solid var(--card-border-light);
+        border-radius: var(--radius);
+        padding: 1rem;
+        text-align: center;
+      }
 
-    // File Preview Handler
-    function setupFilePreview(inputId, promptId, containerId, previewId, filenameId) {
-      const input = document.getElementById(inputId);
-      const prompt = document.getElementById(promptId);
-      const container = document.getElementById(containerId);
-      const preview = document.getElementById(previewId);
-      const filename = document.getElementById(filenameId);
+      .heatmap-box h4 {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-bottom: 0.65rem;
+        font-weight: 600;
+      }
 
-      input.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            preview.src = evt.target.result;
-            prompt.style.display = 'none';
-            container.style.display = 'block';
-            filename.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-          };
-          reader.readAsDataURL(file);
+      .heatmap-box img {
+        max-width: 100%;
+        max-height: 320px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--card-border);
+        display: block;
+        margin: 0 auto;
+      }
+
+      .legend {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--card-border-light);
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .legend-color-dashed {
+        width: 16px;
+        height: 2px;
+        border-top: 2px dashed var(--blue);
+      }
+
+      .stage-simple-card {
+        background: var(--card-bg-subtle);
+        border: 1px solid var(--card-border-light);
+        border-radius: var(--radius);
+        padding: 1.5rem 2rem;
+        max-width: 460px;
+        margin: 0 auto;
+      }
+
+      .stage-simple-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+      }
+
+      .stage-simple-row:not(:last-child) {
+        border-bottom: 1px solid var(--card-border-light);
+      }
+
+      .stage-simple-label {
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      .stage-simple-val {
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stage-highlight {
+        font-family: var(--font-serif);
+        color: var(--green);
+        font-size: 1.45rem;
+        font-weight: 400;
+      }
+
+      .disclaimer {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        text-align: center;
+        line-height: 1.5;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--card-border-light);
+      }
+
+      footer {
+        text-align: center;
+        margin-top: auto;
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        padding-top: 2rem;
+      }
+
+      footer strong {
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="top-bar">
+          <div class="brand">
+            <div class="brand-logo">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="8"
+                  r="6"
+                  stroke="#fff"
+                  stroke-width="1.8"
+                  stroke-dasharray="3 2"
+                />
+                <path
+                  d="M8 6.5C9 4 11 3 12 3s3 1 4 3.5"
+                  stroke="#fff"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M7 8c1.5-1 3.5-1.5 5-1.5s3.5.5 5 1.5"
+                  stroke="#fff"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12 14v4M9 20h6"
+                  stroke="#fff"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <div class="brand-text">
+              <h2>ScalpSync</h2>
+              <span>by AiProff &middot; Trained on Indian scalps</span>
+            </div>
+          </div>
+
+          <div class="system-status" id="systemStatus">
+            <div class="status-dot"></div>
+            <span id="statusText">Services Operational</span>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" role="tablist">
+          <button
+            class="nav-tab active"
+            id="tabCrown"
+            onclick="switchModule('crown')"
+            role="tab"
+            aria-selected="true"
+          >
+            <span>Coverage Comparison</span>
+          </button>
+          <button
+            class="nav-tab"
+            id="tabStage"
+            onclick="switchModule('stage')"
+            role="tab"
+            aria-selected="false"
+          >
+            <span>Hairfall Stage</span>
+          </button>
+        </nav>
+      </header>
+
+      <div id="globalError" class="alert-error"></div>
+
+      <!-- MODULE 1: Scalp Coverage Comparison -->
+      <main id="moduleCrown" class="module-view active">
+        <div class="module-banner">
+          <div class="badge-module">
+            Guided Capture &middot; Matched Follow-up
+          </div>
+          <h1>Scalp Coverage Comparison</h1>
+          <p>
+            Upload baseline and follow-up scalp photos to compute coverage
+            change. Same shot, fair comparison.
+          </p>
+        </div>
+
+        <div class="card">
+          <form id="crownForm">
+            <div class="upload-grid">
+              <div class="upload-box" id="drop-last">
+                <input
+                  type="file"
+                  id="last_visit_image"
+                  accept="image/*"
+                />
+                <div id="prompt-last">
+                  <div class="upload-icon">
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#1a7a4c"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                      ></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="upload-title">Baseline Photo</div>
+                  <div class="upload-desc">
+                    First-visit scalp capture (JPG, PNG)
+                  </div>
+                  <div class="upload-choice-actions">
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-upload"
+                      onclick="triggerFileInput('last_visit_image')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span>Upload File</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-camera"
+                      onclick="openCameraCapture('last')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                      </svg>
+                      <span>Take Photo</span>
+                    </button>
+                  </div>
+                  <div class="upload-drop-hint">or drag and drop here</div>
+                </div>
+                <div class="preview-container" id="container-last">
+                  <img
+                    class="preview-img"
+                    id="preview-last"
+                    alt="Baseline Preview"
+                  />
+                  <div class="file-tag" id="filename-last"></div>
+                  <div class="preview-actions">
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="triggerFileInput('last_visit_image')"
+                    >
+                      Upload Different
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="openCameraCapture('last')"
+                    >
+                      Retake Photo
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file btn-remove-file"
+                      onclick="resetFile('last')"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="upload-box" id="drop-today">
+                <input
+                  type="file"
+                  id="today_visit_image"
+                  accept="image/*"
+                />
+                <div id="prompt-today">
+                  <div class="upload-icon">
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#1a7a4c"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                      ></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="upload-title">Follow-up Photo</div>
+                  <div class="upload-desc">
+                    Latest visit scalp capture (JPG, PNG)
+                  </div>
+                  <div class="upload-choice-actions">
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-upload"
+                      onclick="triggerFileInput('today_visit_image')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span>Upload File</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-camera"
+                      onclick="openCameraCapture('today')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                      </svg>
+                      <span>Take Photo</span>
+                    </button>
+                  </div>
+                  <div class="upload-drop-hint">or drag and drop here</div>
+                </div>
+                <div class="preview-container" id="container-today">
+                  <img
+                    class="preview-img"
+                    id="preview-today"
+                    alt="Follow-up Preview"
+                  />
+                  <div class="file-tag" id="filename-today"></div>
+                  <div class="preview-actions">
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="triggerFileInput('today_visit_image')"
+                    >
+                      Upload Different
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="openCameraCapture('today')"
+                    >
+                      Retake Photo
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file btn-remove-file"
+                      onclick="resetFile('today')"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="crownSubmitBtn" class="btn-action">
+              <span>Compare Both Visits</span>
+            </button>
+
+            <div class="loading-box" id="crownLoading">
+              <div class="spinner"></div>
+              <div class="loading-text">Mapping scalp coverage...</div>
+              <div class="loading-subtext">
+                Segmenting hair-covered and exposed regions, computing change
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card results-section" id="crownResults">
+          <div class="results-header">
+            <h3>Scalp Coverage Progress Report</h3>
+          </div>
+
+          <div class="hero-number">
+            <div class="headline positive" id="heroChange">--</div>
+            <div class="hero-sub">
+              relative gain in scalp coverage,
+              <strong id="heroRange">--</strong>
+            </div>
+          </div>
+
+          <div class="metrics-comparison">
+            <div class="visit-card">
+              <div class="visit-card-title">Baseline</div>
+              <div class="metric-row">
+                <span class="metric-name">Scalp coverage</span>
+                <span class="metric-num" id="prevDensity">--%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill bar-coverage"
+                  id="prevDensityBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Exposed scalp</span>
+                <span class="metric-num" id="prevScalp">--%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill bar-exposed"
+                  id="prevScalpBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+
+            <div class="visit-card">
+              <div class="visit-card-title">Follow-up</div>
+              <div class="metric-row">
+                <span class="metric-name">Scalp coverage</span>
+                <span class="metric-num" id="todayDensity">--%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill bar-coverage"
+                  id="todayDensityBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Exposed scalp</span>
+                <span class="metric-num" id="todayScalp">--%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill bar-exposed"
+                  id="todayScalpBar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="heatmaps-section" id="visualizationsSection">
+            <div class="heatmaps-title">Segmentation Overlays</div>
+            <div class="heatmaps-grid">
+              <div class="heatmap-box">
+                <h4>Baseline Overlay</h4>
+                <img id="overlayLast" src="" alt="Baseline Overlay" />
+              </div>
+              <div class="heatmap-box">
+                <h4>Follow-up Overlay</h4>
+                <img id="overlayToday" src="" alt="Follow-up Overlay" />
+              </div>
+            </div>
+            <div class="legend">
+              <div class="legend-item">
+                <div class="legend-color" style="background: #1a7a4c"></div>
+                <span>Hair-covered scalp</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: #f5a623"></div>
+                <span>Exposed scalp</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color-dashed"></div>
+                <span>Head boundary</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            ScalpSync is a visual scalp coverage progress aid based on
+            photographs. It is not a diagnostic measurement of hair count or
+            follicular density.
+          </div>
+        </div>
+      </main>
+
+      <!-- MODULE 2: Hairfall Stage Determiner -->
+      <main id="moduleStage" class="module-view">
+        <div class="module-banner">
+          <div
+            class="badge-module"
+            style="
+              color: var(--blue);
+              background: var(--blue-bg);
+              border-color: #b3d4ea;
+            "
+          >
+            Stage Classification Model
+          </div>
+          <h1>Hairfall Stage Determiner</h1>
+          <p>
+            Upload a scalp photograph to classify the hairfall stage and model
+            confidence score.
+          </p>
+        </div>
+
+        <div class="card">
+          <form id="stageForm">
+            <div class="upload-single-container">
+              <div class="upload-box" id="drop-stage">
+                <input type="file" id="stage_image" accept="image/*" />
+                <div id="prompt-stage">
+                  <div class="upload-icon">
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#2e7db5"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                      ></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <div class="upload-title">Select Scalp Image</div>
+                  <div class="upload-desc">
+                    Crown or hairline photo (JPG, PNG)
+                  </div>
+                  <div class="upload-choice-actions">
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-upload"
+                      onclick="triggerFileInput('stage_image')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span>Upload File</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-choice btn-choice-camera"
+                      onclick="openCameraCapture('stage')"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                      </svg>
+                      <span>Take Photo</span>
+                    </button>
+                  </div>
+                  <div class="upload-drop-hint">or drag and drop here</div>
+                </div>
+                <div class="preview-container" id="container-stage">
+                  <img
+                    class="preview-img"
+                    id="preview-stage"
+                    alt="Stage Image Preview"
+                  />
+                  <div class="file-tag" id="filename-stage"></div>
+                  <div class="preview-actions">
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="triggerFileInput('stage_image')"
+                    >
+                      Upload Different
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file"
+                      onclick="openCameraCapture('stage')"
+                    >
+                      Retake Photo
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-change-file btn-remove-file"
+                      onclick="resetFile('stage')"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              id="stageSubmitBtn"
+              class="btn-action btn-stage"
+            >
+              <span>Predict Stage</span>
+            </button>
+
+            <div class="loading-box" id="stageLoading">
+              <div class="spinner spinner-stage"></div>
+              <div class="loading-text" style="color: var(--blue)">
+                Predicting hairfall stage...
+              </div>
+              <div class="loading-subtext">
+                Processing image with classification model
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card results-section" id="stageResults">
+          <div class="results-header">
+            <h3>Stage Determination Result</h3>
+          </div>
+
+          <div class="stage-simple-card">
+            <div class="stage-simple-row">
+              <span class="stage-simple-label">Stage</span>
+              <span class="stage-simple-val stage-highlight" id="resStage"
+                >-</span
+              >
+            </div>
+            <div class="stage-simple-row">
+              <span class="stage-simple-label">Confidence</span>
+              <span class="stage-simple-val" id="resConfidence">-</span>
+            </div>
+          </div>
+
+          <div class="disclaimer">
+            This is a visual classification aid. It does not replace clinical
+            assessment by a dermatologist.
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <strong>AiProff</strong> &middot; ScalpSync &middot; Coverage Comparison
+        &amp; Hairfall Stage Classification
+      </footer>
+    </div>
+
+    <script>
+      // Module Navigation
+      function switchModule(moduleName) {
+        const isCrown = moduleName === "crown";
+
+        document.getElementById("tabCrown").classList.toggle("active", isCrown);
+        document
+          .getElementById("tabCrown")
+          .setAttribute("aria-selected", isCrown ? "true" : "false");
+
+        document
+          .getElementById("tabStage")
+          .classList.toggle("active", !isCrown);
+        document
+          .getElementById("tabStage")
+          .setAttribute("aria-selected", !isCrown ? "true" : "false");
+
+        document
+          .getElementById("moduleCrown")
+          .classList.toggle("active", isCrown);
+        document
+          .getElementById("moduleStage")
+          .classList.toggle("active", !isCrown);
+
+        window.location.hash = isCrown ? "#crown" : "#stage";
+        clearGlobalError();
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        if (
+          window.location.hash === "#stage" ||
+          window.location.hash === "#stage-determiner"
+        ) {
+          switchModule("stage");
+        } else {
+          switchModule("crown");
         }
+        checkSystemHealth();
       });
-    }
 
-    function resetFile(type) {
-      if (type === 'last') {
-        document.getElementById('last_visit_image').value = '';
-        document.getElementById('container-last').style.display = 'none';
-        document.getElementById('prompt-last').style.display = 'block';
-      } else if (type === 'today') {
-        document.getElementById('today_visit_image').value = '';
-        document.getElementById('container-today').style.display = 'none';
-        document.getElementById('prompt-today').style.display = 'block';
-      } else if (type === 'stage') {
-        document.getElementById('stage_image').value = '';
-        document.getElementById('container-stage').style.display = 'none';
-        document.getElementById('prompt-stage').style.display = 'block';
-      }
-    }
-
-    setupFilePreview('last_visit_image', 'prompt-last', 'container-last', 'preview-last', 'filename-last');
-    setupFilePreview('today_visit_image', 'prompt-today', 'container-today', 'preview-today', 'filename-today');
-    setupFilePreview('stage_image', 'prompt-stage', 'container-stage', 'preview-stage', 'filename-stage');
-
-    // Drag and Drop Effects
-    ['drop-last', 'drop-today', 'drop-stage'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      ['dragenter', 'dragover'].forEach(name => {
-        el.addEventListener(name, (e) => { e.preventDefault(); el.classList.add('dragover'); });
-      });
-      ['dragleave', 'drop'].forEach(name => {
-        el.addEventListener(name, (e) => { e.preventDefault(); el.classList.remove('dragover'); });
-      });
-    });
-
-    // -------------------------------------------------------
-    // Client-Side Image Compression & WebP Conversion
-    // -------------------------------------------------------
-    async function compressToWebP(file, maxDimension = 1024, quality = 0.88) {
-      if (!file || !file.type.startsWith('image/')) {
-        return file;
-      }
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = new Image();
-          img.onload = function() {
-            let width = img.width;
-            let height = img.height;
-
-            // Preserve aspect ratio with bounded max dimension
-            if (width > height && width > maxDimension) {
-              height = Math.round((height * maxDimension) / width);
-              width = maxDimension;
-            } else if (height > maxDimension) {
-              width = Math.round((width * maxDimension) / height);
-              height = maxDimension;
+      async function checkSystemHealth() {
+        try {
+          const res = await fetch("/api/v1/health");
+          if (res.ok) {
+            const data = await res.json();
+            const statusText = document.getElementById("statusText");
+            if (data.status === "healthy") {
+              statusText.textContent =
+                "Online (" +
+                (data.active_modules ? data.active_modules.length : 2) +
+                " Modules Active)";
+            } else {
+              statusText.textContent = "Degraded Mode";
             }
+          }
+        } catch (e) {}
+      }
 
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+      const globalError = document.getElementById("globalError");
+      function showGlobalError(msg) {
+        globalError.textContent = msg;
+        globalError.style.display = "block";
+        globalError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      function clearGlobalError() {
+        globalError.textContent = "";
+        globalError.style.display = "none";
+      }
 
-            canvas.toBlob(
-              function(blob) {
-                if (blob) {
-                  const originalName = (file.name || 'image').replace(/\.[^/.]+$/, '');
-                  const webpFile = new File([blob], `${originalName}.webp`, { type: 'image/webp' });
-                  resolve(webpFile);
-                } else {
-                  resolve(file);
-                }
-              },
-              'image/webp',
-              quality
-            );
+      function triggerFileInput(inputId) {
+        var input = document.getElementById(inputId);
+        if (input) input.click();
+      }
+
+      function setupFilePreview(
+        inputId,
+        promptId,
+        containerId,
+        previewId,
+        filenameId,
+      ) {
+        var input = document.getElementById(inputId);
+        var prompt = document.getElementById(promptId);
+        var container = document.getElementById(containerId);
+        var preview = document.getElementById(previewId);
+        var filename = document.getElementById(filenameId);
+
+        input.addEventListener("change", function (e) {
+          var file = (e.target.files && e.target.files[0]) || input._capturedFile;
+          if (file) {
+            delete input._capturedFile;
+            var reader = new FileReader();
+            reader.onload = function (evt) {
+              preview.src = evt.target.result;
+              prompt.style.display = "none";
+              container.style.display = "block";
+              filename.textContent =
+                file.name + " (" + (file.size / 1024).toFixed(1) + " KB)";
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+      function resetFile(type) {
+        if (type === "last") {
+          var input = document.getElementById("last_visit_image");
+          input.value = "";
+          delete input._capturedFile;
+          document.getElementById("container-last").style.display = "none";
+          document.getElementById("prompt-last").style.display = "block";
+        } else if (type === "today") {
+          var input = document.getElementById("today_visit_image");
+          input.value = "";
+          delete input._capturedFile;
+          document.getElementById("container-today").style.display = "none";
+          document.getElementById("prompt-today").style.display = "block";
+        } else if (type === "stage") {
+          var input = document.getElementById("stage_image");
+          input.value = "";
+          delete input._capturedFile;
+          document.getElementById("container-stage").style.display = "none";
+          document.getElementById("prompt-stage").style.display = "block";
+        }
+      }
+
+      setupFilePreview(
+        "last_visit_image",
+        "prompt-last",
+        "container-last",
+        "preview-last",
+        "filename-last",
+      );
+      setupFilePreview(
+        "today_visit_image",
+        "prompt-today",
+        "container-today",
+        "preview-today",
+        "filename-today",
+      );
+      setupFilePreview(
+        "stage_image",
+        "prompt-stage",
+        "container-stage",
+        "preview-stage",
+        "filename-stage",
+      );
+
+      ["drop-last", "drop-today", "drop-stage"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var slot = id === "drop-last" ? "last" : id === "drop-today" ? "today" : "stage";
+        var inputId = slot === "last" ? "last_visit_image" : slot === "today" ? "today_visit_image" : "stage_image";
+        var input = document.getElementById(inputId);
+
+        ["dragenter", "dragover"].forEach(function (name) {
+          el.addEventListener(name, function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.add("dragover");
+          });
+        });
+        ["dragleave"].forEach(function (name) {
+          el.addEventListener(name, function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove("dragover");
+          });
+        });
+        el.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          el.classList.remove("dragover");
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            try {
+              input.files = e.dataTransfer.files;
+            } catch (err) {
+              input._capturedFile = e.dataTransfer.files[0];
+            }
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        });
+      });
+
+      async function compressToWebP(file, maxDimension, quality) {
+        maxDimension = maxDimension || 1024;
+        quality = quality || 0.88;
+        if (!file || !file.type.startsWith("image/")) return file;
+
+        return new Promise(function (resolve) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+              var width = img.width;
+              var height = img.height;
+
+              if (width > height && width > maxDimension) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else if (height > maxDimension) {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+
+              var canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              var ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+
+              canvas.toBlob(
+                function (blob) {
+                  if (blob) {
+                    var originalName = (file.name || "image").replace(
+                      /\.[^/.]+$/,
+                      "",
+                    );
+                    var webpFile = new File([blob], originalName + ".webp", {
+                      type: "image/webp",
+                    });
+                    resolve(webpFile);
+                  } else {
+                    resolve(file);
+                  }
+                },
+                "image/webp",
+                quality,
+              );
+            };
+            img.onerror = function () {
+              resolve(file);
+            };
+            img.src = e.target.result;
           };
-          img.onerror = function() {
+          reader.onerror = function () {
             resolve(file);
           };
-          img.src = e.target.result;
-        };
-        reader.onerror = function() {
-          resolve(file);
-        };
-        reader.readAsDataURL(file);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // MODULE 1: Crown / Scalp Coverage Comparison
+      var crownForm = document.getElementById("crownForm");
+      var crownSubmitBtn = document.getElementById("crownSubmitBtn");
+      var crownLoading = document.getElementById("crownLoading");
+      var crownResults = document.getElementById("crownResults");
+
+      crownForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearGlobalError();
+
+        var lastInput = document.getElementById("last_visit_image");
+        var todayInput = document.getElementById("today_visit_image");
+        var lastFile = (lastInput.files && lastInput.files[0]) || lastInput._capturedFile;
+        var todayFile = (todayInput.files && todayInput.files[0]) || todayInput._capturedFile;
+
+        if (!lastFile || !todayFile) {
+          showGlobalError(
+            "Please select both baseline and follow-up scalp images.",
+          );
+          return;
+        }
+
+        crownSubmitBtn.disabled = true;
+        crownSubmitBtn.style.display = "none";
+        crownLoading.style.display = "block";
+        crownResults.style.display = "none";
+
+        try {
+          var compressed = await Promise.all([
+            compressToWebP(lastFile),
+            compressToWebP(todayFile),
+          ]);
+          var formData = new FormData();
+          formData.append("last_visit_image", compressed[0]);
+          formData.append("today_visit_image", compressed[1]);
+
+          var response = await fetch("/compare-crowns", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            var errData = await response.json().catch(function () {
+              return {};
+            });
+            throw new Error(
+              errData.detail ||
+                errData.message ||
+                "Failed to analyse scalp coverage.",
+            );
+          }
+
+          var data = await response.json();
+          renderCrownResults(data);
+        } catch (err) {
+          showGlobalError(
+            err.message || "An unexpected error occurred during comparison.",
+          );
+        } finally {
+          crownSubmitBtn.disabled = false;
+          crownSubmitBtn.style.display = "flex";
+          crownLoading.style.display = "none";
+        }
       });
-    }
 
-    // -------------------------------------------------------
-    // MODULE 1: Crown Hair Comparison Submission
-    // -------------------------------------------------------
-    const crownForm = document.getElementById('crownForm');
-    const crownSubmitBtn = document.getElementById('crownSubmitBtn');
-    const crownLoading = document.getElementById('crownLoading');
-    const crownResults = document.getElementById('crownResults');
+      function renderCrownResults(data) {
+        var pChange = data.percentage_change || {};
+        var prev = data.previous_visit || {};
+        var today = data.today_visit || {};
 
-    crownForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      clearGlobalError();
+        var prevCoverage = prev.hair_density_percent || 0;
+        var todayCoverage = today.hair_density_percent || 0;
+        var prevExposed = prev.scalp_visibility_percent || 0;
+        var todayExposed = today.scalp_visibility_percent || 0;
+        var coverageDelta = pChange.hair_density_change_pct || 0;
 
-      const lastFile = document.getElementById('last_visit_image').files[0];
-      const todayFile = document.getElementById('today_visit_image').files[0];
+        var heroEl = document.getElementById("heroChange");
+        heroEl.textContent =
+          (coverageDelta > 0 ? "+" : "") + coverageDelta + "%";
+        heroEl.className =
+          "headline " +
+          (coverageDelta > 0
+            ? "positive"
+            : coverageDelta < 0
+              ? "negative"
+              : "neutral");
 
-      if (!lastFile || !todayFile) {
-        showGlobalError('Please select both baseline and follow-up crown images.');
-        return;
-      }
+        document.getElementById("heroRange").textContent =
+          prevCoverage + "% up to " + todayCoverage + "%";
 
-      crownSubmitBtn.disabled = true;
-      crownSubmitBtn.style.display = 'none';
-      crownLoading.style.display = 'block';
-      crownResults.style.display = 'none';
+        document.getElementById("prevDensity").textContent = prevCoverage + "%";
+        document.getElementById("prevScalp").textContent = prevExposed + "%";
+        document.getElementById("prevDensityBar").style.width =
+          prevCoverage + "%";
+        document.getElementById("prevScalpBar").style.width = prevExposed + "%";
 
-      try {
-        // Compress both images to lightweight WebP in parallel on the client side
-        const [compressedLast, compressedToday] = await Promise.all([
-          compressToWebP(lastFile),
-          compressToWebP(todayFile)
-        ]);
+        document.getElementById("todayDensity").textContent =
+          todayCoverage + "%";
+        document.getElementById("todayScalp").textContent = todayExposed + "%";
+        document.getElementById("todayDensityBar").style.width =
+          todayCoverage + "%";
+        document.getElementById("todayScalpBar").style.width =
+          todayExposed + "%";
 
-        const formData = new FormData();
-        formData.append('last_visit_image', compressedLast);
-        formData.append('today_visit_image', compressedToday);
-
-        const response = await fetch('/compare-crowns', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || errData.message || 'Failed to analyze crown comparison.');
+        if (data.visualizations) {
+          if (data.visualizations.previous_visit_overlay_b64) {
+            document.getElementById("overlayLast").src =
+              data.visualizations.previous_visit_overlay_b64;
+            document.getElementById("overlayToday").src =
+              data.visualizations.today_visit_overlay_b64;
+          }
         }
 
-        const data = await response.json();
-        renderCrownResults(data);
-
-      } catch (err) {
-        showGlobalError(err.message || 'An unexpected error occurred during comparison.');
-      } finally {
-        crownSubmitBtn.disabled = false;
-        crownSubmitBtn.style.display = 'flex';
-        crownLoading.style.display = 'none';
+        crownResults.style.display = "block";
+        crownResults.scrollIntoView({ behavior: "smooth" });
       }
-    });
 
-    function renderCrownResults(data) {
-      const pChange = data.percentage_change || {};
-      const prev = data.previous_visit || {};
-      const today = data.today_visit || {};
+      // MODULE 2: Hairfall Stage Determiner
+      var stageForm = document.getElementById("stageForm");
+      var stageSubmitBtn = document.getElementById("stageSubmitBtn");
+      var stageLoading = document.getElementById("stageLoading");
+      var stageResults = document.getElementById("stageResults");
 
-      // Deltas
-      const densityDelta = pChange.hair_density_change_pct ?? 0;
-      const scalpDelta = pChange.scalp_visibility_change_pct ?? 0;
+      stageForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearGlobalError();
 
-      const densityEl = document.getElementById('densityDeltaVal');
-      densityEl.textContent = (densityDelta > 0 ? '+' : '') + densityDelta + '%';
-      densityEl.className = 'delta-value ' + (densityDelta >= 0 ? 'positive' : 'negative');
+        var stageInput = document.getElementById("stage_image");
+        var stageFile = (stageInput.files && stageInput.files[0]) || stageInput._capturedFile;
+        if (!stageFile) {
+          showGlobalError(
+            "Please select a scalp image for stage determination.",
+          );
+          return;
+        }
 
-      const scalpEl = document.getElementById('scalpDeltaVal');
-      scalpEl.textContent = (scalpDelta > 0 ? '+' : '') + scalpDelta + '%';
-      scalpEl.className = 'delta-value ' + (scalpDelta <= 0 ? 'positive' : 'negative');
+        stageSubmitBtn.disabled = true;
+        stageSubmitBtn.style.display = "none";
+        stageLoading.style.display = "block";
+        stageResults.style.display = "none";
 
-      // Previous Visit
-      const pDensity = prev.hair_density_percent ?? 0;
-      const pScalp = prev.scalp_visibility_percent ?? 0;
-      document.getElementById('prevDensity').textContent = pDensity + '%';
-      document.getElementById('prevScalp').textContent = pScalp + '%';
-      document.getElementById('prevDensityBar').style.width = pDensity + '%';
+        try {
+          var compressedStage = await compressToWebP(stageFile);
+          var formData = new FormData();
+          formData.append("file", compressedStage);
 
-      // Today Visit
-      const tDensity = today.hair_density_percent ?? 0;
-      const tScalp = today.scalp_visibility_percent ?? 0;
-      document.getElementById('todayDensity').textContent = tDensity + '%';
-      document.getElementById('todayScalp').textContent = tScalp + '%';
-      document.getElementById('todayDensityBar').style.width = tDensity + '%';
+          var response = await fetch("/predict-stage", {
+            method: "POST",
+            body: formData,
+          });
 
-      // Visualizations
-      if (data.visualizations) {
-        if (data.visualizations.previous_visit_overlay_b64) {
-          document.getElementById('overlayLast').src = data.visualizations.previous_visit_overlay_b64;
-          document.getElementById('overlayToday').src = data.visualizations.today_visit_overlay_b64;
+          if (!response.ok) {
+            var errData = await response.json().catch(function () {
+              return {};
+            });
+            throw new Error(
+              errData.detail ||
+                errData.message ||
+                "Failed to determine hairfall stage.",
+            );
+          }
+
+          var data = await response.json();
+          renderStageResults(data);
+        } catch (err) {
+          showGlobalError(
+            err.message || "An error occurred during stage classification.",
+          );
+        } finally {
+          stageSubmitBtn.disabled = false;
+          stageSubmitBtn.style.display = "flex";
+          stageLoading.style.display = "none";
+        }
+      });
+
+      function renderStageResults(data) {
+        document.getElementById("resStage").textContent =
+          data.stage || "Level 1";
+        document.getElementById("resConfidence").textContent =
+          (data.confidence || 0) + "%";
+
+        stageResults.style.display = "block";
+        stageResults.scrollIntoView({ behavior: "smooth" });
+      }
+
+      // ─── Guided Camera Capture Controller (with Flash/Torch Distance Trick) ───
+      let activeCaptureSlot = null; // 'last', 'today', or 'stage'
+      let currentStream = null;
+      let rearCameras = [];
+      let currentCameraIndex = 0;
+      let isCapturing = false;
+      let hasCaptured = false;
+      let isAnglePerfect = false;
+      let isDistancePerfect = false;
+      let angleMsg = "";
+      let angleSubMsg = "";
+      let distanceMsg = "";
+      let currentLuma = 0;
+      let brightnessRafId = null;
+      let orientationReceived = false;
+      let orientationCheckTimer = null;
+      let snapCanvasRef = null;
+
+      const TARGET_BETA = 20; // Target pitch angle (crown)
+      const TARGET_GAMMA = 0; // Target roll angle (level)
+      const TOLERANCE = 5; // ±5 degree tolerance
+      const MIN_LUMA = 85; // Distance check: min brightness with torch
+      const MAX_LUMA = 180; // Distance check: max brightness with torch
+
+      const camModal = document.getElementById("cameraModal");
+      const camVideo = document.getElementById("camVideo");
+      const camHiddenCanvas = document.getElementById("camHiddenCanvas");
+      const camResultImg = document.getElementById("camResultImg");
+      const camInstruction = document.getElementById("camInstruction");
+      const camSubInstruction = document.getElementById("camSubInstruction");
+      const camReticle = document.getElementById("camReticle");
+      const camFlashOverlay = document.getElementById("camFlashOverlay");
+      const camDebugStatus = document.getElementById("camDebugStatus");
+      const camLiveControls = document.getElementById("camLiveControls");
+      const camReviewControls = document.getElementById("camReviewControls");
+      const camStartBtn = document.getElementById("camStartBtn");
+      const camShutterBtn = document.getElementById("camShutterBtn");
+      const camSwitchLensBtn = document.getElementById("camSwitchLensBtn");
+      const camRetakeBtn = document.getElementById("camRetakeBtn");
+      const camUsePhotoBtn = document.getElementById("camUsePhotoBtn");
+      const camTargetBadge = document.getElementById("camTargetBadge");
+      const camModalTitle = document.getElementById("camModalTitle");
+
+      async function openCameraCapture(slot) {
+        activeCaptureSlot = slot;
+        camModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+
+        const slotLabels = {
+          last: "Baseline Photo",
+          today: "Follow-up Photo",
+          stage: "Hairfall Stage Photo",
+        };
+        const label = slotLabels[slot] || "Scalp Capture";
+        camTargetBadge.textContent = label;
+        camModalTitle.textContent = "Guided Crown Capture";
+
+        // Reset state
+        hasCaptured = false;
+        isCapturing = false;
+        isAnglePerfect = false;
+        isDistancePerfect = false;
+        orientationReceived = false;
+        snapCanvasRef = null;
+
+        camResultImg.style.display = "none";
+        camReviewControls.style.display = "none";
+        camLiveControls.style.display = "flex";
+        camReticle.style.display = "flex";
+        camReticle.classList.remove("perfect");
+        camShutterBtn.disabled = true;
+        camStartBtn.style.display = "none";
+        camInstruction.innerText = "Aligning...";
+        camInstruction.style.color = "#fff";
+        camSubInstruction.innerText = "Fit the crown completely inside the oval.";
+
+        // iOS motion permission request
+        if (
+          typeof DeviceOrientationEvent !== "undefined" &&
+          typeof DeviceOrientationEvent.requestPermission === "function"
+        ) {
+          try {
+            await DeviceOrientationEvent.requestPermission();
+          } catch (e) {
+            console.warn("Motion permission:", e);
+          }
+        }
+
+        window.addEventListener("deviceorientation", handleOrientation);
+
+        // Gyro fallback for desktop browsers
+        clearTimeout(orientationCheckTimer);
+        orientationCheckTimer = setTimeout(() => {
+          if (!orientationReceived) {
+            isAnglePerfect = true;
+            evaluateMasterConditions();
+          }
+        }, 1800);
+
+        // Initialize camera
+        try {
+          await populateCameras();
+          currentCameraIndex = 0;
+          await startSpecificCamera(currentCameraIndex);
+          if (rearCameras.length > 1) {
+            camSwitchLensBtn.style.display = "inline-block";
+          } else {
+            camSwitchLensBtn.style.display = "none";
+          }
+        } catch (err) {
+          console.error("Camera start failed:", err);
+          camInstruction.innerText = "Camera Access Error";
+          camInstruction.style.color = "#ff6b6b";
+          camSubInstruction.innerText =
+            err.message || "Please enable camera access.";
+          camStartBtn.style.display = "inline-block";
         }
       }
 
-      crownResults.style.display = 'block';
-      crownResults.scrollIntoView({ behavior: 'smooth' });
-    }
+      async function populateCameras() {
+        let tempStream = null;
+        try {
+          tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (e) {}
 
-    // -------------------------------------------------------
-    // MODULE 2: Hairfall Stage Determiner Submission
-    // -------------------------------------------------------
-    const stageForm = document.getElementById('stageForm');
-    const stageSubmitBtn = document.getElementById('stageSubmitBtn');
-    const stageLoading = document.getElementById('stageLoading');
-    const stageResults = document.getElementById('stageResults');
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        rearCameras = devices.filter(
+          (device) =>
+            device.kind === "videoinput" &&
+            (device.label.toLowerCase().includes("back") ||
+              device.label.toLowerCase().includes("rear") ||
+              device.label.toLowerCase().includes("environment")),
+        );
 
-    stageForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      clearGlobalError();
-
-      const stageFile = document.getElementById('stage_image').files[0];
-      if (!stageFile) {
-        showGlobalError('Please select a scalp image for stage determination.');
-        return;
-      }
-
-      stageSubmitBtn.disabled = true;
-      stageSubmitBtn.style.display = 'none';
-      stageLoading.style.display = 'block';
-      stageResults.style.display = 'none';
-
-      try {
-        // Compress scalp image to lightweight WebP on the client side
-        const compressedStage = await compressToWebP(stageFile);
-
-        const formData = new FormData();
-        formData.append('file', compressedStage);
-
-        const response = await fetch('/predict-stage', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || errData.message || 'Failed to determine hairfall stage.');
+        if (tempStream) {
+          tempStream.getTracks().forEach((track) => track.stop());
         }
 
-        const data = await response.json();
-        renderStageResults(data);
-
-      } catch (err) {
-        showGlobalError(err.message || 'An error occurred during stage classification.');
-      } finally {
-        stageSubmitBtn.disabled = false;
-        stageSubmitBtn.style.display = 'flex';
-        stageLoading.style.display = 'none';
+        if (rearCameras.length === 0) {
+          const allCams = devices.filter(
+            (device) => device.kind === "videoinput",
+          );
+          rearCameras = allCams.length > 1 ? allCams.slice(1) : allCams;
+        }
       }
-    });
 
-    function renderStageResults(data) {
-      // Strictly Stage Level and Confidence %
-      document.getElementById('resStage').textContent = data.stage || 'Level 1';
-      document.getElementById('resConfidence').textContent = `${data.confidence}%`;
+      async function startSpecificCamera(index) {
+        if (brightnessRafId) {
+          cancelAnimationFrame(brightnessRafId);
+          brightnessRafId = null;
+        }
 
-      stageResults.style.display = 'block';
-      stageResults.scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
-</body>
+        if (currentStream) {
+          const prevTrack = currentStream.getVideoTracks()[0];
+          if (
+            prevTrack &&
+            prevTrack.getCapabilities &&
+            prevTrack.getCapabilities().torch
+          ) {
+            try {
+              await prevTrack.applyConstraints({
+                advanced: [{ torch: false }],
+              });
+            } catch (e) {}
+          }
+          currentStream.getTracks().forEach((track) => track.stop());
+          currentStream = null;
+        }
+
+        try {
+          const selectedCamera = rearCameras[index];
+          const constraints = selectedCamera
+            ? { video: { deviceId: { exact: selectedCamera.deviceId } } }
+            : { video: { facingMode: "environment" } };
+
+          currentStream =
+            await navigator.mediaDevices.getUserMedia(constraints);
+          camVideo.srcObject = currentStream;
+
+          camVideo.onloadedmetadata = async () => {
+            try {
+              await camVideo.play();
+            } catch (e) {}
+
+            const track = currentStream.getVideoTracks()[0];
+            const capabilities =
+              track && track.getCapabilities && track.getCapabilities();
+
+            if (capabilities && capabilities.torch) {
+              try {
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash: ON`;
+              } catch (e) {
+                camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash constraint failed`;
+                isDistancePerfect = true;
+              }
+            } else {
+              camDebugStatus.innerText = `Lens ${index + 1} of ${rearCameras.length || 1} | Flash API Not Supported`;
+              isDistancePerfect = true;
+            }
+
+            evaluateMasterConditions();
+            analyzeBrightnessLoop();
+          };
+        } catch (err) {
+          console.error("Failed to start camera", err);
+          camInstruction.innerText = "Camera Error";
+          camInstruction.style.color = "#ff6b6b";
+          camSubInstruction.innerText =
+            err.message || "Failed to start camera stream.";
+        }
+      }
+
+      function handleOrientation(e) {
+        if (isCapturing || hasCaptured) return;
+        if (e.beta !== null && e.beta !== undefined) {
+          orientationReceived = true;
+        }
+        const beta = e.beta;
+        const gamma = e.gamma;
+
+        if (beta === null || gamma === null) {
+          isAnglePerfect = true;
+          evaluateMasterConditions();
+          return;
+        }
+
+        if (gamma < TARGET_GAMMA - TOLERANCE) {
+          isAnglePerfect = false;
+          angleMsg = "↻ Rotate right";
+          angleSubMsg = "Phone is tilted left.";
+        } else if (gamma > TARGET_GAMMA + TOLERANCE) {
+          isAnglePerfect = false;
+          angleMsg = "↺ Rotate left";
+          angleSubMsg = "Phone is tilted right.";
+        } else if (beta < TARGET_BETA - TOLERANCE) {
+          isAnglePerfect = false;
+          angleMsg = "↑ Tilt UP";
+          angleSubMsg = `Current angle: ${Math.round(beta)}° (Target: ${TARGET_BETA}°)`;
+        } else if (beta > TARGET_BETA + TOLERANCE) {
+          isAnglePerfect = false;
+          angleMsg = "↓ Tilt DOWN";
+          angleSubMsg = `Current angle: ${Math.round(beta)}° (Target: ${TARGET_BETA}°)`;
+        } else {
+          isAnglePerfect = true;
+        }
+        evaluateMasterConditions();
+      }
+
+      function analyzeBrightnessLoop() {
+        if (hasCaptured || isCapturing) return;
+
+        if (camVideo.readyState >= 2) {
+          const ctx = camHiddenCanvas.getContext("2d", {
+            willReadFrequently: true,
+          });
+          camHiddenCanvas.width = 50;
+          camHiddenCanvas.height = 50;
+
+          const cropSize =
+            Math.min(camVideo.videoWidth, camVideo.videoHeight) * 0.3;
+          const sx = (camVideo.videoWidth - cropSize) / 2;
+          const sy = (camVideo.videoHeight - cropSize) / 2;
+
+          ctx.drawImage(
+            camVideo,
+            sx,
+            sy,
+            cropSize,
+            cropSize,
+            0,
+            0,
+            camHiddenCanvas.width,
+            camHiddenCanvas.height,
+          );
+          const imgData = ctx.getImageData(
+            0,
+            0,
+            camHiddenCanvas.width,
+            camHiddenCanvas.height,
+          ).data;
+
+          let sum = 0;
+          for (let i = 0; i < imgData.length; i += 4) {
+            sum +=
+              0.299 * imgData[i] +
+              0.587 * imgData[i + 1] +
+              0.114 * imgData[i + 2];
+          }
+          currentLuma = sum / (imgData.length / 4);
+
+          if (camDebugStatus.innerText.includes("Flash: ON")) {
+            if (currentLuma > MAX_LUMA) {
+              isDistancePerfect = false;
+              distanceMsg = "Move Back ↑ (Too Bright)";
+            } else if (currentLuma < MIN_LUMA) {
+              isDistancePerfect = false;
+              distanceMsg = "Move Closer ↓ (Too Dark)";
+            } else {
+              isDistancePerfect = true;
+            }
+          }
+          evaluateMasterConditions();
+        }
+        brightnessRafId = requestAnimationFrame(analyzeBrightnessLoop);
+      }
+
+      function evaluateMasterConditions() {
+        if (hasCaptured) return;
+
+        if (!isAnglePerfect) {
+          camInstruction.innerText = angleMsg || "Align Angle";
+          camInstruction.style.color = "#ff6b6b";
+          camSubInstruction.innerText =
+            angleSubMsg || "Tilt phone to ~20° angle.";
+          camReticle.classList.remove("perfect");
+          camShutterBtn.disabled = true;
+        } else if (!isDistancePerfect) {
+          camInstruction.innerText = distanceMsg || "Adjust Distance";
+          camInstruction.style.color = "#ffa726";
+          camSubInstruction.innerText = `Luminance: ${Math.round(currentLuma)} (Target: ${MIN_LUMA}–${MAX_LUMA})`;
+          camReticle.classList.remove("perfect");
+          camShutterBtn.disabled = true;
+        } else {
+          camInstruction.innerText = "Perfect! Tap to Capture.";
+          camInstruction.style.color = "#00e68a";
+          camSubInstruction.innerText =
+            "Hold steady and tap the shutter button.";
+          camReticle.classList.add("perfect");
+          camShutterBtn.disabled = false;
+        }
+      }
+
+      camShutterBtn.addEventListener("click", () => {
+        if (camShutterBtn.disabled) return;
+        isCapturing = true;
+        hasCaptured = true;
+
+        if (brightnessRafId) {
+          cancelAnimationFrame(brightnessRafId);
+          brightnessRafId = null;
+        }
+
+        // Shutter flash animation
+        camFlashOverlay.style.opacity = "1";
+        setTimeout(() => {
+          camFlashOverlay.style.opacity = "0";
+        }, 150);
+
+        // Turn off Torch
+        if (currentStream) {
+          const track = currentStream.getVideoTracks()[0];
+          if (track && track.getCapabilities && track.getCapabilities().torch) {
+            track
+              .applyConstraints({ advanced: [{ torch: false }] })
+              .catch(() => {});
+          }
+        }
+
+        // Draw full-resolution snapshot to canvas
+        const snapCanvas = document.createElement("canvas");
+        snapCanvas.width = camVideo.videoWidth || 1280;
+        snapCanvas.height = camVideo.videoHeight || 720;
+        const ctx = snapCanvas.getContext("2d");
+        ctx.drawImage(camVideo, 0, 0, snapCanvas.width, snapCanvas.height);
+        snapCanvasRef = snapCanvas;
+
+        const dataUrl = snapCanvas.toDataURL("image/jpeg", 0.95);
+        camResultImg.src = dataUrl;
+        camResultImg.style.display = "block";
+
+        camLiveControls.style.display = "none";
+        camReviewControls.style.display = "flex";
+        camReticle.style.display = "none";
+
+        camInstruction.innerText = "Photo Captured!";
+        camInstruction.style.color = "#fff";
+        camSubInstruction.innerText =
+          "Accept this photo or tap Retake to try again.";
+      });
+
+      camRetakeBtn.addEventListener("click", () => {
+        hasCaptured = false;
+        isCapturing = false;
+        snapCanvasRef = null;
+
+        camResultImg.style.display = "none";
+        camReviewControls.style.display = "none";
+        camLiveControls.style.display = "flex";
+        camReticle.style.display = "flex";
+
+        if (currentStream) {
+          const track = currentStream.getVideoTracks()[0];
+          if (track && track.getCapabilities && track.getCapabilities().torch) {
+            track
+              .applyConstraints({ advanced: [{ torch: true }] })
+              .catch(() => {});
+          }
+        }
+
+        analyzeBrightnessLoop();
+      });
+
+      camUsePhotoBtn.addEventListener("click", () => {
+        if (!snapCanvasRef || !activeCaptureSlot) {
+          closeCameraCapture();
+          return;
+        }
+
+        snapCanvasRef.toBlob(
+          (blob) => {
+            if (!blob) {
+              closeCameraCapture();
+              return;
+            }
+            const slot = activeCaptureSlot;
+            const inputId =
+              slot === "last"
+                ? "last_visit_image"
+                : slot === "today"
+                  ? "today_visit_image"
+                  : "stage_image";
+            const input = document.getElementById(inputId);
+            const filename = `scalp_${slot}_${Date.now()}.jpg`;
+            const file = new File([blob], filename, { type: "image/jpeg" });
+
+            try {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              input.files = dt.files;
+            } catch (e) {
+              input._capturedFile = file;
+            }
+            input._capturedFile = file;
+
+            const previewId =
+              slot === "last"
+                ? "preview-last"
+                : slot === "today"
+                  ? "preview-today"
+                  : "preview-stage";
+            const containerId =
+              slot === "last"
+                ? "container-last"
+                : slot === "today"
+                  ? "container-today"
+                  : "container-stage";
+            const promptId =
+              slot === "last"
+                ? "prompt-last"
+                : slot === "today"
+                  ? "prompt-today"
+                  : "prompt-stage";
+            const filenameId =
+              slot === "last"
+                ? "filename-last"
+                : slot === "today"
+                  ? "filename-today"
+                  : "filename-stage";
+
+            const preview = document.getElementById(previewId);
+            const container = document.getElementById(containerId);
+            const prompt = document.getElementById(promptId);
+            const filenameEl = document.getElementById(filenameId);
+
+            preview.src = URL.createObjectURL(blob);
+            prompt.style.display = "none";
+            container.style.display = "block";
+            filenameEl.textContent = `${filename} (${(blob.size / 1024).toFixed(1)} KB - Camera)`;
+
+            closeCameraCapture();
+          },
+          "image/jpeg",
+          0.92,
+        );
+      });
+
+      function closeCameraCapture() {
+        if (brightnessRafId) {
+          cancelAnimationFrame(brightnessRafId);
+          brightnessRafId = null;
+        }
+        clearTimeout(orientationCheckTimer);
+        window.removeEventListener("deviceorientation", handleOrientation);
+
+        if (currentStream) {
+          const track = currentStream.getVideoTracks()[0];
+          if (track && track.getCapabilities && track.getCapabilities().torch) {
+            try {
+              track.applyConstraints({ advanced: [{ torch: false }] });
+            } catch (e) {}
+          }
+          currentStream.getTracks().forEach((track) => track.stop());
+          currentStream = null;
+        }
+
+        camModal.style.display = "none";
+        document.body.style.overflow = "";
+        activeCaptureSlot = null;
+      }
+
+      camSwitchLensBtn.addEventListener("click", async () => {
+        if (rearCameras.length <= 1) return;
+        currentCameraIndex = (currentCameraIndex + 1) % rearCameras.length;
+        await startSpecificCamera(currentCameraIndex);
+      });
+
+      camStartBtn.addEventListener("click", async () => {
+        camStartBtn.style.display = "none";
+        try {
+          await populateCameras();
+          await startSpecificCamera(currentCameraIndex);
+        } catch (err) {
+          camStartBtn.style.display = "inline-block";
+        }
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (
+          e.key === "Escape" &&
+          camModal &&
+          camModal.style.display === "flex"
+        ) {
+          closeCameraCapture();
+        }
+      });
+    </script>
+
+    <!-- Guided Camera Capture Modal -->
+    <div id="cameraModal" class="cam-modal" style="display: none;">
+      <div class="cam-modal-header">
+        <div class="cam-modal-title-box">
+          <span class="cam-modal-badge" id="camTargetBadge">Crown Capture</span>
+          <div class="cam-modal-title" id="camModalTitle">Guided Scalp Capture</div>
+        </div>
+        <button
+          type="button"
+          class="cam-modal-close"
+          onclick="closeCameraCapture()"
+          aria-label="Close Camera"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="cam-viewport">
+        <video id="camVideo" autoplay playsinline muted></video>
+        <canvas id="camHiddenCanvas" style="display: none;"></canvas>
+        <img id="camResultImg" alt="Captured Scalp Photo" style="display: none;" />
+
+        <div class="cam-overlay" id="camOverlay">
+          <div class="cam-guidance-box">
+            <div id="camInstruction">Crown Capture</div>
+            <div id="camSubInstruction">Initializing camera...</div>
+          </div>
+          <div class="cam-reticle" id="camReticle"></div>
+        </div>
+
+        <div id="camFlashOverlay"></div>
+        <div id="camDebugStatus">Waiting for camera...</div>
+      </div>
+
+      <div class="cam-controls">
+        <div id="camLiveControls" class="cam-controls-group">
+          <button
+            type="button"
+            id="camStartBtn"
+            class="cam-btn cam-btn-primary"
+            style="display: none;"
+          >
+            Start Camera
+          </button>
+          <button
+            type="button"
+            id="camShutterBtn"
+            class="cam-shutter-btn"
+            disabled
+            aria-label="Capture Shutter"
+          ></button>
+          <button
+            type="button"
+            id="camSwitchLensBtn"
+            class="cam-btn cam-btn-secondary"
+            style="display: none;"
+          >
+            🔄 Switch Lens
+          </button>
+        </div>
+
+        <div
+          id="camReviewControls"
+          class="cam-controls-group"
+          style="display: none;"
+        >
+          <button type="button" id="camRetakeBtn" class="cam-btn cam-btn-secondary">
+            Retake Photo
+          </button>
+          <button type="button" id="camUsePhotoBtn" class="cam-btn cam-btn-success">
+            Use This Photo ✓
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Crown Capture - Flash Distance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: -apple-system, sans-serif; user-select: none; }
+    
+    #cam { width: 100%; height: 100%; object-fit: cover; display: block; }
+    
+    /* UI Overlay */
+    .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 10; }
+    
+    /* Instruction Box */
+    .guidance-box { position: absolute; top: 10%; background: rgba(0, 0, 0, 0.8); padding: 15px 25px; border-radius: 20px; text-align: center; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); width: 85%; max-width: 350px; }
+    #instruction { font-size: 20px; font-weight: 800; margin-bottom: 6px; color: #fff; transition: color 0.3s; }
+    #sub-instruction { font-size: 13px; color: #aaa; line-height: 1.4; }
+
+    /* Targeting Reticle */
+    .reticle { width: 220px; height: 280px; border: 3px dashed rgba(255, 255, 255, 0.6); border-radius: 50%; display: flex; justify-content: center; align-items: center; position: relative; transition: all 0.3s ease; box-shadow: 0 0 0 4000px rgba(0,0,0,0.55); }
+    .reticle.perfect { border-color: #00e68a; border-style: solid; box-shadow: 0 0 20px rgba(0,230,138,0.5), inset 0 0 20px rgba(0,230,138,0.3), 0 0 0 4000px rgba(0,0,0,0.6); }
+
+    /* Flash & Result */
+    #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 999; }
+    #result-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 20; display: none; }
+    
+    /* Controls Container */
+    .controls { position: absolute; bottom: 5%; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 30; pointer-events: none; }
+    
+    /* Buttons */
+    .btn { pointer-events: auto; padding: 15px 30px; font-size: 16px; font-weight: 700; border-radius: 30px; border: none; cursor: pointer; transition: transform 0.1s, opacity 0.3s; }
+    .btn:active { transform: scale(0.95); }
+    
+    #start-btn { background: #fff; color: #000; }
+    #switch-lens-btn { background: rgba(255,255,255,0.2); color: #fff; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.4); font-size: 14px; padding: 10px 20px; display: none; }
+    #retake-btn { background: #1a1a1a; color: #fff; border: 2px solid #333; display: none; }
+    
+    /* The Manual Capture Shutter Button */
+    #shutter-btn { width: 75px; height: 75px; border-radius: 50%; background: #00e68a; border: 5px solid #fff; display: none; box-shadow: 0 4px 15px rgba(0,230,138,0.4); pointer-events: auto; cursor: pointer; transition: background 0.3s, transform 0.1s, opacity 0.3s; }
+    #shutter-btn:active { transform: scale(0.90); }
+    #shutter-btn:disabled { background: #555; border-color: #888; box-shadow: none; opacity: 0.5; cursor: not-allowed; }
+
+    /* Debug Status */
+    #debug-status { position: absolute; bottom: 20px; font-size: 11px; color: rgba(255,255,255,0.6); text-align: center; width: 100%; pointer-events: none; z-index: 10; }
+  </style>
+</head>
+<body>
+
+  <video id="cam" autoplay playsinline muted></video>
+  <canvas id="hidden-canvas" style="display:none;"></canvas>
+  <img id="result-img" alt="Captured Crown">
+  
+  <div class="overlay" id="ui-layer">
+    <div class="guidance-box">
+      <div id="instruction">Crown Capture</div>
+      <div id="sub-instruction">Tap Start to initialize camera.</div>
+    </div>
+    <div class="reticle" id="reticle"></div>
+  </div>
+  
+  <div id="flash"></div>
+  <div id="debug-status">Waiting...</div>
+  
+  <div class="controls">
+    <button id="start-btn" class="btn">Start Camera</button>
+    <button id="shutter-btn" disabled></button>
+    <button id="switch-lens-btn" class="btn">🔄 Switch Lens</button>
+    <button id="retake-btn" class="btn">Retake Photo</button>
+  </div>
+
+<script>
+  // --- Elements ---
+  const video = document.getElementById('cam');
+  const hiddenCanvas = document.getElementById('hidden-canvas');
+  const instruction = document.getElementById('instruction');
+  const subInstruction = document.getElementById('sub-instruction');
+  const reticle = document.getElementById('reticle');
+  const flash = document.getElementById('flash');
+  
+  const startBtn = document.getElementById('start-btn');
+  const switchLensBtn = document.getElementById('switch-lens-btn');
+  const shutterBtn = document.getElementById('shutter-btn');
+  const retakeBtn = document.getElementById('retake-btn');
+  const resultImg = document.getElementById('result-img');
+  const debugStatus = document.getElementById('debug-status');
+
+  // --- Configuration & Thresholds ---
+  const TARGET_BETA = 20;       // Target pitch angle
+  const TARGET_GAMMA = 0;       // Keep phone level
+  const TOLERANCE = 5;          // ±5 degree error margin
+  
+  // Brightness (Luminance) Thresholds for Distance
+  // Scale is 0 (pitch black) to 255 (pure white)
+  const MIN_LUMA = 85;   // If darker than this, phone is too far
+  const MAX_LUMA = 180;  // If brighter than this, phone is too close
+
+  let isCapturing = false;
+  let hasCaptured = false;
+  
+  // State Trackers
+  let isAnglePerfect = false;
+  let angleMsg = "";
+  let angleSubMsg = "";
+  
+  let isDistancePerfect = false;
+  let distanceMsg = "";
+  let currentLuma = 0;
+
+  let rearCameras = [];
+  let currentCameraIndex = 0;
+  let currentStream = null;
+
+  // --- 1. Camera Array & Tracking ---
+  async function populateCameras() {
+    let tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    
+    rearCameras = devices.filter(device => 
+      device.kind === 'videoinput' && 
+      (device.label.toLowerCase().includes('back') || 
+       device.label.toLowerCase().includes('rear') || 
+       device.label.toLowerCase().includes('environment'))
+    );
+
+    tempStream.getTracks().forEach(track => track.stop());
+
+    if (rearCameras.length === 0) {
+      const allCams = devices.filter(device => device.kind === 'videoinput');
+      rearCameras = allCams.length > 1 ? allCams.slice(1) : allCams;
+    }
+  }
+
+  // --- 2. Start Camera & Turn on Flashlight ---
+  async function startSpecificCamera(index) {
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    try {
+      const selectedCamera = rearCameras[index];
+      const constraints = selectedCamera 
+        ? { video: { deviceId: { exact: selectedCamera.deviceId } } } 
+        : { video: { facingMode: 'environment' } };
+
+      currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = currentStream;
+      
+      // Wait for video to load, then apply Torch
+      video.onloadedmetadata = async () => {
+        video.play();
+        const track = currentStream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities && track.getCapabilities();
+        
+        if (capabilities && capabilities.torch) {
+          try {
+            await track.applyConstraints({ advanced: [{ torch: true }] });
+            debugStatus.innerText = `Lens ${index + 1} | Flash: ON`;
+          } catch (e) {
+            debugStatus.innerText = `Lens ${index + 1} | Flash constraint failed`;
+          }
+        } else {
+          // If browser/device doesn't support Torch API, we bypass the distance check
+          debugStatus.innerText = `Lens ${index + 1} | Flash API Not Supported`;
+          isDistancePerfect = true; 
+        }
+        
+        // Start the brightness analysis loop
+        requestAnimationFrame(analyzeBrightnessLoop);
+      };
+      
+    } catch (err) {
+      console.error("Failed to start camera", err);
+    }
+  }
+
+  // --- 3. Start Button Logic ---
+  startBtn.addEventListener('click', async () => {
+    try {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const permission = await DeviceOrientationEvent.requestPermission();
+        if (permission !== 'granted') throw new Error("Motion permission denied.");
+      }
+      
+      await populateCameras();
+      currentCameraIndex = 0;
+      await startSpecificCamera(currentCameraIndex);
+
+      if (rearCameras.length > 1) switchLensBtn.style.display = 'block';
+      
+      window.addEventListener('deviceorientation', handleOrientation);
+      
+      startBtn.style.display = 'none';
+      shutterBtn.style.display = 'block'; // Show the manual shutter
+      
+      isCapturing = false;
+      hasCaptured = false;
+      
+    } catch (err) {
+      instruction.innerText = "Setup Error";
+      instruction.style.color = "#ff6b6b";
+      subInstruction.innerText = err.message || "Could not access camera.";
+    }
+  });
+
+  // Switch Lens Button
+  switchLensBtn.addEventListener('click', async () => {
+    currentCameraIndex = (currentCameraIndex + 1) % rearCameras.length;
+    await startSpecificCamera(currentCameraIndex);
+  });
+
+  // --- 4. Gyroscope Logic ---
+  function handleOrientation(e) {
+    if (isCapturing || hasCaptured) return;
+    let beta = e.beta;
+    let gamma = e.gamma;
+
+    if (gamma < (TARGET_GAMMA - TOLERANCE)) {
+      isAnglePerfect = false; angleMsg = "↻ Rotate right"; angleSubMsg = "Phone is tilted left.";
+    } 
+    else if (gamma > (TARGET_GAMMA + TOLERANCE)) {
+      isAnglePerfect = false; angleMsg = "↺ Rotate left"; angleSubMsg = "Phone is tilted right.";
+    }
+    else if (beta < (TARGET_BETA - TOLERANCE)) {
+      isAnglePerfect = false; angleMsg = "↑ Tilt UP"; angleSubMsg = `Current angle: ${Math.round(beta)}°`;
+    } 
+    else if (beta > (TARGET_BETA + TOLERANCE)) {
+      isAnglePerfect = false; angleMsg = "↓ Tilt DOWN"; angleSubMsg = `Current angle: ${Math.round(beta)}°`;
+    } 
+    else {
+      isAnglePerfect = true;
+    }
+    evaluateMasterConditions();
+  }
+
+  // --- 5. Brightness (Distance) Logic ---
+  function analyzeBrightnessLoop() {
+    if (hasCaptured || isCapturing) return;
+
+    if (video.readyState >= 2) {
+      const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+      hiddenCanvas.width = 50;  // Keep it tiny for performance
+      hiddenCanvas.height = 50;
+      
+      // Calculate a crop in the center of the video
+      const cropSize = Math.min(video.videoWidth, video.videoHeight) * 0.3; 
+      const sx = (video.videoWidth - cropSize) / 2;
+      const sy = (video.videoHeight - cropSize) / 2;
+      
+      // Draw just the center to our 50x50 canvas
+      ctx.drawImage(video, sx, sy, cropSize, cropSize, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      const imgData = ctx.getImageData(0, 0, hiddenCanvas.width, hiddenCanvas.height).data;
+      
+      // Calculate Average Luminance
+      let sum = 0;
+      for (let i = 0; i < imgData.length; i += 4) {
+          const r = imgData[i];
+          const g = imgData[i+1];
+          const b = imgData[i+2];
+          sum += (0.299 * r + 0.587 * g + 0.114 * b);
+      }
+      currentLuma = sum / (imgData.length / 4);
+
+      // Check against thresholds
+      // Only enforce brightness if the device actually turned the torch on
+      if (debugStatus.innerText.includes("Flash: ON")) {
+        if (currentLuma > MAX_LUMA) {
+          isDistancePerfect = false;
+          distanceMsg = "Move Back ↑ (Too Bright)";
+        } else if (currentLuma < MIN_LUMA) {
+          isDistancePerfect = false;
+          distanceMsg = "Move Closer ↓ (Too Dark)";
+        } else {
+          isDistancePerfect = true;
+        }
+      }
+      evaluateMasterConditions();
+    }
+    requestAnimationFrame(analyzeBrightnessLoop);
+  }
+
+  // --- 6. Master Evaluator & UI ---
+  function evaluateMasterConditions() {
+    if (hasCaptured) return;
+
+    // Priority 1: Fix Angle
+    if (!isAnglePerfect) {
+      instruction.innerText = angleMsg;
+      instruction.style.color = "#ff6b6b";
+      subInstruction.innerText = angleSubMsg;
+      reticle.classList.remove('perfect');
+      shutterBtn.disabled = true;
+    } 
+    // Priority 2: Fix Distance (Brightness)
+    else if (isAnglePerfect && !isDistancePerfect) {
+      instruction.innerText = distanceMsg;
+      instruction.style.color = "#ffa726"; // Orange warning
+      subInstruction.innerText = `Luma: ${Math.round(currentLuma)}`;
+      reticle.classList.remove('perfect');
+      shutterBtn.disabled = true;
+    }
+    // Priority 3: Perfect conditions
+    else if (isAnglePerfect && isDistancePerfect) {
+      instruction.innerText = "Perfect! Tap to Capture.";
+      instruction.style.color = "#00e68a";
+      subInstruction.innerText = "Hold steady and tap the green button.";
+      reticle.classList.add('perfect');
+      shutterBtn.disabled = false; // Enable manual capture
+    }
+  }
+
+  // --- 7. Manual Capture Logic ---
+  shutterBtn.addEventListener('click', () => {
+    isCapturing = true;
+    hasCaptured = true;
+    
+    // UI Updates
+    shutterBtn.style.display = 'none';
+    switchLensBtn.style.display = 'none';
+    reticle.style.display = 'none';
+    
+    // Flash Animation
+    flash.style.opacity = 1;
+    setTimeout(() => { flash.style.opacity = 0; }, 150);
+
+    // Turn off Torch if possible
+    if (currentStream) {
+      const track = currentStream.getVideoTracks()[0];
+      if (track.getCapabilities && track.getCapabilities().torch) {
+        track.applyConstraints({ advanced: [{ torch: false }] }).catch(e => console.log(e));
+      }
+    }
+
+    // Capture Image
+    const snapCanvas = document.createElement('canvas');
+    snapCanvas.width = video.videoWidth;
+    snapCanvas.height = video.videoHeight;
+    const ctx = snapCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+    
+    resultImg.src = snapCanvas.toDataURL('image/jpeg', 0.9);
+    resultImg.style.display = 'block';
+    
+    instruction.innerText = "Captured!";
+    instruction.style.color = "#fff";
+    subInstruction.innerText = "Image captured at optimal angle and distance.";
+    
+    retakeBtn.style.display = 'block';
+  });
+
+  // --- 8. Retake Logic ---
+  retakeBtn.addEventListener('click', () => {
+    hasCaptured = false;
+    isCapturing = false;
+    
+    resultImg.style.display = 'none';
+    retakeBtn.style.display = 'none';
+    
+    if (rearCameras.length > 1) switchLensBtn.style.display = 'block';
+    shutterBtn.style.display = 'block';
+    reticle.style.display = 'flex';
+    
+    // Turn torch back on
+    if (currentStream) {
+      const track = currentStream.getVideoTracks()[0];
+      if (track.getCapabilities && track.getCapabilities().torch) {
+        track.applyConstraints({ advanced: [{ torch: true }] }).catch(e => console.log(e));
+      }
+    }
+    
+    requestAnimationFrame(analyzeBrightnessLoop);
+  });
+</script>
+</body>
+</html>
