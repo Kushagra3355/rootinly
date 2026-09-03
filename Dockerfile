@@ -20,6 +20,7 @@ COPY configs/ ./configs/
 COPY src/ ./src/
 COPY models/ ./models/
 COPY static/ ./static/
+COPY image/ ./image/
 COPY scripts/ ./scripts/
 COPY main.py .
 

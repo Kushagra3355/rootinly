@@ -21,6 +21,18 @@ async def serve_frontend():
         content={"status": "error", "message": "index.html frontend not found."},
     )
 
+@router.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serves the favicon from logo2.jpeg."""
+    for candidate in [
+        settings.STATIC_DIR / "image" / "logo2.jpeg",
+        settings.STATIC_DIR / "logo2.jpeg",
+        settings.BASE_DIR / "image" / "logo2.jpeg",
+    ]:
+        if candidate.exists():
+            return FileResponse(str(candidate), media_type="image/jpeg")
+    return JSONResponse(status_code=404, content={"message": "Favicon not found"})
+
 @router.post(
     "/compare-crowns",
     response_model=ComparisonResponse,

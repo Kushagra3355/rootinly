@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ScalpSync | Scalp Coverage Analysis — AiProff</title>
+    <link rel="icon" type="image/jpeg" href="/static/image/logo2.jpeg" />
+    <link rel="shortcut icon" type="image/jpeg" href="/static/image/logo2.jpeg" />
+    <link rel="apple-touch-icon" href="/static/image/logo2.jpeg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -85,6 +88,15 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+      }
+
+      .brand-logo-img {
+        height: 42px;
+        width: auto;
+        max-width: 140px;
+        object-fit: contain;
+        border-radius: var(--radius-sm);
+        display: block;
       }
 
       .brand-logo {
@@ -991,44 +1003,107 @@
         border-top: 2px dashed var(--blue);
       }
 
-      .stage-simple-card {
-        background: var(--card-bg-subtle);
-        border: 1px solid var(--card-border-light);
-        border-radius: var(--radius);
-        padding: 1.5rem 2rem;
-        max-width: 460px;
-        margin: 0 auto;
-      }
-
-      .stage-simple-row {
+      /* Coming Soon Card for Stage Determiner */
+      .coming-soon-card {
+        text-align: center;
+        padding: 4.5rem 2rem;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        padding: 0.75rem 0;
+        justify-content: center;
+        margin: 1rem 0;
       }
 
-      .stage-simple-row:not(:last-child) {
-        border-bottom: 1px solid var(--card-border-light);
+      .coming-soon-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: var(--blue-bg);
+        border: 1px solid #b3d4ea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--blue);
+        box-shadow: 0 4px 16px rgba(46, 125, 181, 0.12);
       }
 
-      .stage-simple-label {
-        color: var(--text-muted);
-        font-size: 1rem;
-        font-weight: 500;
-      }
-
-      .stage-simple-val {
+      .coming-soon-badge {
+        font-size: 0.72rem;
         font-weight: 700;
-        font-size: 1.3rem;
-        color: var(--text);
-        font-variant-numeric: tabular-nums;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--blue);
+        background: var(--blue-bg);
+        border: 1px solid #b3d4ea;
+        padding: 4px 14px;
+        border-radius: 9999px;
+        margin-bottom: 1.25rem;
+        display: inline-block;
       }
 
-      .stage-highlight {
+      .coming-soon-title {
         font-family: var(--font-serif);
-        color: var(--green);
-        font-size: 1.45rem;
+        font-size: 2.3rem;
         font-weight: 400;
+        color: var(--text);
+        margin-bottom: 0.85rem;
+        letter-spacing: -0.02em;
+      }
+
+      .coming-soon-desc {
+        max-width: 520px;
+        font-size: 0.95rem;
+        line-height: 1.65;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+      }
+
+      .coming-soon-features {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 2.25rem;
+      }
+
+      .feature-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: var(--bg-subtle);
+        border: 1px solid var(--card-border-light);
+        padding: 6px 14px;
+        border-radius: 9999px;
+      }
+
+      .btn-back-crown {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.75rem;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(26, 122, 76, 0.25);
+        transition: all 0.2s ease;
+      }
+
+      .btn-back-crown:hover {
+        background: var(--green-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(26, 122, 76, 0.3);
       }
 
       .disclaimer {
@@ -1060,40 +1135,12 @@
       <header>
         <div class="top-bar">
           <div class="brand">
-            <div class="brand-logo">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="12"
-                  cy="8"
-                  r="6"
-                  stroke="#fff"
-                  stroke-width="1.8"
-                  stroke-dasharray="3 2"
-                />
-                <path
-                  d="M8 6.5C9 4 11 3 12 3s3 1 4 3.5"
-                  stroke="#fff"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M7 8c1.5-1 3.5-1.5 5-1.5s3.5.5 5 1.5"
-                  stroke="#fff"
-                  stroke-width="1.3"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M12 14v4M9 20h6"
-                  stroke="#fff"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </div>
+            <img
+              src="/static/image/logo.jpeg"
+              alt="Logo"
+              class="brand-logo-img"
+              onerror="this.onerror=null; this.src='image/logo.jpeg';"
+            />
             <div class="brand-text">
               <h2>ScalpSync</h2>
               <span>by AiProff &middot; Trained on Indian scalps</span>
@@ -1444,155 +1491,67 @@
 
       <!-- MODULE 2: Hairfall Stage Determiner -->
       <main id="moduleStage" class="module-view">
-        <div class="module-banner">
-          <div
-            class="badge-module"
-            style="
-              color: var(--blue);
-              background: var(--blue-bg);
-              border-color: #b3d4ea;
-            "
-          >
-            Stage Classification Model
-          </div>
-          <h1>Hairfall Stage Determiner</h1>
-          <p>
-            Upload a scalp photograph to classify the hairfall stage and model
-            confidence score.
-          </p>
-        </div>
-
-        <div class="card">
-          <form id="stageForm">
-            <div class="upload-single-container">
-              <div class="upload-box" id="drop-stage">
-                <input type="file" id="stage_image" accept="image/*" />
-                <div id="prompt-stage">
-                  <div class="upload-icon">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#2e7db5"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-                      ></path>
-                      <polyline points="17 8 12 3 7 8"></polyline>
-                      <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                  </div>
-                  <div class="upload-title">Select Scalp Image</div>
-                  <div class="upload-desc">
-                    Crown or hairline photo (JPG, PNG)
-                  </div>
-                  <div class="upload-choice-actions">
-                    <button
-                      type="button"
-                      class="btn-choice btn-choice-upload"
-                      onclick="triggerFileInput('stage_image')"
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                      </svg>
-                      <span>Upload File</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-choice btn-choice-camera"
-                      onclick="openCameraCapture('stage')"
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                        <circle cx="12" cy="13" r="4"></circle>
-                      </svg>
-                      <span>Take Photo</span>
-                    </button>
-                  </div>
-                  <div class="upload-drop-hint">or drag and drop here</div>
-                </div>
-                <div class="preview-container" id="container-stage">
-                  <img
-                    class="preview-img"
-                    id="preview-stage"
-                    alt="Stage Image Preview"
-                  />
-                  <div class="file-tag" id="filename-stage"></div>
-                  <div class="preview-actions">
-                    <button
-                      type="button"
-                      class="btn-change-file"
-                      onclick="triggerFileInput('stage_image')"
-                    >
-                      Upload Different
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-change-file"
-                      onclick="openCameraCapture('stage')"
-                    >
-                      Retake Photo
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-change-file btn-remove-file"
-                      onclick="resetFile('stage')"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              id="stageSubmitBtn"
-              class="btn-action btn-stage"
+        <div class="coming-soon-card">
+          <div class="coming-soon-icon">
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <span>Predict Stage</span>
-            </button>
-
-            <div class="loading-box" id="stageLoading">
-              <div class="spinner spinner-stage"></div>
-              <div class="loading-text" style="color: var(--blue)">
-                Predicting hairfall stage...
-              </div>
-              <div class="loading-subtext">
-                Processing image with classification model
-              </div>
-            </div>
-          </form>
-        </div>
-
-        <div class="card results-section" id="stageResults">
-          <div class="results-header">
-            <h3>Stage Determination Result</h3>
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
           </div>
-
-          <div class="stage-simple-card">
-            <div class="stage-simple-row">
-              <span class="stage-simple-label">Stage</span>
-              <span class="stage-simple-val stage-highlight" id="resStage"
-                >-</span
-              >
-            </div>
-            <div class="stage-simple-row">
-              <span class="stage-simple-label">Confidence</span>
-              <span class="stage-simple-val" id="resConfidence">-</span>
-            </div>
+          <span class="coming-soon-badge">Under Active Development</span>
+          <h1 class="coming-soon-title">Coming Soon!</h1>
+          <p class="coming-soon-desc">
+            The <strong>Hairfall Stage Determiner</strong> module is currently being fine-tuned with clinical Norwood-Hamilton scale datasets. Automated scalp stage classification and progress tracking will be available in an upcoming release.
+          </p>
+          <div class="coming-soon-features">
+            <span class="feature-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Norwood Scale Stages 1–7
+            </span>
+            <span class="feature-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Confidence Scoring Engine
+            </span>
+            <span class="feature-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Clinical Stage Analytics
+            </span>
           </div>
-
-          <div class="disclaimer">
-            This is a visual classification aid. It does not replace clinical
-            assessment by a dermatologist.
-          </div>
+          <button
+            type="button"
+            class="btn-back-crown"
+            onclick="switchModule('crown')"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back to Coverage Comparison</span>
+          </button>
         </div>
       </main>
 
@@ -1760,6 +1719,7 @@
         filenameId,
       ) {
         var input = document.getElementById(inputId);
+        if (!input) return;
         var prompt = document.getElementById(promptId);
         var container = document.getElementById(containerId);
         var preview = document.getElementById(previewId);
@@ -1785,22 +1745,18 @@
       function resetFile(type) {
         if (type === "last") {
           var input = document.getElementById("last_visit_image");
+          if (!input) return;
           input.value = "";
           delete input._capturedFile;
           document.getElementById("container-last").style.display = "none";
           document.getElementById("prompt-last").style.display = "block";
         } else if (type === "today") {
           var input = document.getElementById("today_visit_image");
+          if (!input) return;
           input.value = "";
           delete input._capturedFile;
           document.getElementById("container-today").style.display = "none";
           document.getElementById("prompt-today").style.display = "block";
-        } else if (type === "stage") {
-          var input = document.getElementById("stage_image");
-          input.value = "";
-          delete input._capturedFile;
-          document.getElementById("container-stage").style.display = "none";
-          document.getElementById("prompt-stage").style.display = "block";
         }
       }
 
@@ -1818,15 +1774,8 @@
         "preview-today",
         "filename-today",
       );
-      setupFilePreview(
-        "stage_image",
-        "prompt-stage",
-        "container-stage",
-        "preview-stage",
-        "filename-stage",
-      );
 
-      ["drop-last", "drop-today", "drop-stage"].forEach(function (id) {
+      ["drop-last", "drop-today"].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
         var slot = id === "drop-last" ? "last" : id === "drop-today" ? "today" : "stage";
@@ -2035,74 +1984,6 @@
 
         crownResults.style.display = "block";
         crownResults.scrollIntoView({ behavior: "smooth" });
-      }
-
-      // MODULE 2: Hairfall Stage Determiner
-      var stageForm = document.getElementById("stageForm");
-      var stageSubmitBtn = document.getElementById("stageSubmitBtn");
-      var stageLoading = document.getElementById("stageLoading");
-      var stageResults = document.getElementById("stageResults");
-
-      stageForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        clearGlobalError();
-
-        var stageInput = document.getElementById("stage_image");
-        var stageFile = (stageInput.files && stageInput.files[0]) || stageInput._capturedFile;
-        if (!stageFile) {
-          showGlobalError(
-            "Please select a scalp image for stage determination.",
-          );
-          return;
-        }
-
-        stageSubmitBtn.disabled = true;
-        stageSubmitBtn.style.display = "none";
-        stageLoading.style.display = "block";
-        stageResults.style.display = "none";
-
-        try {
-          var compressedStage = await compressToWebP(stageFile);
-          var formData = new FormData();
-          formData.append("file", compressedStage);
-
-          var response = await fetch("/predict-stage", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            var errData = await response.json().catch(function () {
-              return {};
-            });
-            throw new Error(
-              errData.detail ||
-                errData.message ||
-                "Failed to determine hairfall stage.",
-            );
-          }
-
-          var data = await response.json();
-          renderStageResults(data);
-        } catch (err) {
-          showGlobalError(
-            err.message || "An error occurred during stage classification.",
-          );
-        } finally {
-          stageSubmitBtn.disabled = false;
-          stageSubmitBtn.style.display = "flex";
-          stageLoading.style.display = "none";
-        }
-      });
-
-      function renderStageResults(data) {
-        document.getElementById("resStage").textContent =
-          data.stage || "Level 1";
-        document.getElementById("resConfidence").textContent =
-          (data.confidence || 0) + "%";
-
-        stageResults.style.display = "block";
-        stageResults.scrollIntoView({ behavior: "smooth" });
       }
 
       // ─── Guided Camera Capture Controller (with Flash/Torch Distance Trick) ───

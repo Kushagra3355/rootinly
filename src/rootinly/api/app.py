@@ -83,6 +83,10 @@ def create_app() -> FastAPI:
     if settings.STATIC_DIR.exists():
         app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
 
+    image_dir = settings.BASE_DIR / "image"
+    if image_dir.exists():
+        app.mount("/image", StaticFiles(directory=str(image_dir)), name="image")
+
     # API Routes for both modules & health
     app.include_router(comparison_router)
     app.include_router(stage_router)
